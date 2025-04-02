@@ -1,3 +1,4 @@
+// src/hooks/useAuth.ts
 import { useState, useEffect } from 'react';
 import { User, onAuthStateChanged } from 'firebase/auth';
 import { auth, getUserData, signIn, signUp, signOut } from '@/lib/firebase';

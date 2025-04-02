@@ -1,3 +1,4 @@
+// src/components/landing/HowItWorks.tsx
 import React from 'react';
 import { CheckCircle } from 'lucide-react';
 

@@ -1,3 +1,4 @@
+// src/lib/invoiceGenerator.ts
 "use client";
 
 import { jsPDF } from 'jspdf';

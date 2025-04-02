@@ -1,3 +1,4 @@
+// src/types/index.ts
 export interface ACHBankDetails {
   bankName: string;
   bankAddress: string;

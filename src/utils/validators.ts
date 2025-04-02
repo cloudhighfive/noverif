@@ -1,3 +1,4 @@
+// src/utils/validators.ts
 import { z } from 'zod';
 
 export const signUpSchema = z.object({

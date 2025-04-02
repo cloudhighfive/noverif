@@ -1,3 +1,4 @@
+// src/app/sign-up/page.tsx
 'use client';
 
 import React, { useEffect } from 'react';

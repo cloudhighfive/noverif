@@ -1,3 +1,4 @@
+// src/components/layout/Footer.tsx
 import React from 'react';
 import Link from 'next/link';
 

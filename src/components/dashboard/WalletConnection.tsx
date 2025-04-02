@@ -1,3 +1,4 @@
+// src/components/dashboard/WalletConnection.tsx
 "use client";
 
 import React, { useState } from 'react';

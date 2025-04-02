@@ -1,3 +1,4 @@
+// src/components/layout/DashboardHeader.tsx
 import React from 'react';
 import { Bell, User } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';

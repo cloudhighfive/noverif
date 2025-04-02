@@ -1,3 +1,4 @@
+// src/lib/adminAuth.ts
 "use client";
 
 import React from 'react';

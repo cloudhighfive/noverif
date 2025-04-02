@@ -1,3 +1,4 @@
+// src/components/dashboard/RecentTransactions.tsx
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
 import { formatCurrency, formatDate, formatStatus } from '@/utils/formatters';

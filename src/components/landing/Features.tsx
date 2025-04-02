@@ -1,3 +1,4 @@
+// src/components/landing/Features.tsx
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Lock, Zap, Wallet, CreditCard } from 'lucide-react';
