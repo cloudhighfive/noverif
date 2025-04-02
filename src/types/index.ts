@@ -1,4 +1,6 @@
 // src/types/index.ts
+import { Timestamp } from 'firebase/firestore';
+
 export interface ACHBankDetails {
   bankName: string;
   bankAddress: string;
@@ -15,11 +17,11 @@ export interface ACHApplication {
   businessName?: string;
   purpose: string;
   status: 'pending' | 'in_progress' | 'completed' | 'rejected';
-  createdAt: Date;
-  updatedAt?: Date;
-  approvedAt?: Date;
-  completedAt?: Date;
-  rejectedAt?: Date;
+  createdAt: Date | Timestamp;
+  updatedAt?: Date | Timestamp;
+  approvedAt?: Date | Timestamp;
+  completedAt?: Date | Timestamp;
+  rejectedAt?: Date | Timestamp;
   adminNotes?: string;
   bankDetails?: ACHBankDetails;
 }
@@ -30,27 +32,28 @@ export interface UserProfile {
   email: string;
   phone?: string;
   address?: string;
-  createdAt: Date;
-  updatedAt?: Date;
+  createdAt: Date | Timestamp;  // Using imported Timestamp type
+  updatedAt?: Date | Timestamp;
   virtualBankStatus: 'pending' | 'in_progress' | 'completed' | 'rejected';
-  virtualBankCreatedAt?: Date;
-  virtualBankCompletedAt?: Date;
+  virtualBankCreatedAt?: Date | Timestamp;
+  virtualBankCompletedAt?: Date | Timestamp;
   wallets: WalletInfo[];
   bankDetails?: ACHBankDetails;
+  suspended?: boolean;
+  applications?: any[];
 }
 
 export interface WalletInfo {
   type: string;
   address: string;
   name: string;
-  connectedAt?: Date;
+  connectedAt?: Date | Timestamp;
 }
-
 
 export interface Transaction {
   id: string;
   userId: string;
-  date: Date;
+  date: Date | Timestamp;
   amount: number;
   fromSource: string;
   toDestination: string;
@@ -58,8 +61,9 @@ export interface Transaction {
   status: 'pending' | 'completed' | 'failed' | 'cancelled';
   type: 'crypto' | 'ach' | 'bank';
   cryptoType?: string; // For crypto transactions (BTC, ETH, etc.)
-  createdAt: Date;
-  updatedAt?: Date;
+  transactionHash?: string; // Add this for blockchain transaction hash
+  createdAt: Date | Timestamp;
+  updatedAt?: Date | Timestamp;
   notes?: string; // Admin notes (not visible to user)
 }
 
@@ -68,4 +72,15 @@ export interface TransactionFilter {
   type?: string;
   dateFrom?: Date;
   dateTo?: Date;
+}
+
+// New Notification interface
+export interface Notification {
+  id: string;
+  userId: string;
+  message: string;
+  type: 'transaction' | 'ach' | 'system';
+  read: boolean;
+  createdAt: Date | Timestamp;
+  relatedId?: string; // ID of related transaction or application
 }

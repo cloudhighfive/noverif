@@ -3,11 +3,13 @@ import { useState, useEffect } from 'react';
 import { User, onAuthStateChanged } from 'firebase/auth';
 import { auth, getUserData, signIn, signUp, signOut } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
+import { UserProfile } from '@/types';
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
-  const [userData, setUserData] = useState<any>(null);
+  const [userData, setUserData] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [isSuspended, setIsSuspended] = useState<boolean>(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -18,11 +20,13 @@ export function useAuth() {
         try {
           const userData = await getUserData(user.uid);
           setUserData(userData);
+          setIsSuspended(userData?.suspended === true);
         } catch (error) {
           console.error("Error fetching user data:", error);
         }
       } else {
         setUserData(null);
+        setIsSuspended(false);
       }
       
       setLoading(false);
@@ -65,6 +69,7 @@ export function useAuth() {
     login,
     register,
     logout,
-    isAuthenticated: !!user
+    isAuthenticated: !!user,
+    isSuspended
   };
 }

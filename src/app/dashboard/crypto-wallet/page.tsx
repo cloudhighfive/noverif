@@ -169,7 +169,16 @@ export default function CryptoWallet() {
                     <button
                       key={wallet.id}
                       className="w-full p-4 rounded-lg bg-dark-900 border border-dark-700 hover:border-primary-500/50 flex items-center transition-colors"
-                      onClick={() => connectWallet(wallet.id)}
+                      onClick={() => {
+                        // Connect using wallet ID - this will generate a simulated wallet
+                        // based on the selected wallet type
+                        const walletInfo = {
+                          type: wallet.id,
+                          address: `0x${Array(40).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join('')}`,
+                          name: wallet.name
+                        };
+                        connectWallet(walletInfo);
+                      }}
                       disabled={connecting}
                     >
                       <span className="text-2xl mr-3">{wallet.icon}</span>

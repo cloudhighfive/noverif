@@ -1,9 +1,11 @@
 // src/components/layout/DashboardHeader.tsx
-import React from 'react';
-import { Bell, User } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
 
-const DashboardHeader = () => {
+import React from 'react';
+import { User } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import NotificationBell from '@/components/notifications/NotificationBell';
+
+const DashboardHeader: React.FC = () => {
   const { userData } = useAuth();
 
   return (
@@ -11,9 +13,7 @@ const DashboardHeader = () => {
       <div className="h-full px-6 flex items-center justify-between">
         <h1 className="text-xl font-semibold text-white">Dashboard</h1>
         <div className="flex items-center space-x-4">
-          <button className="text-gray-400 hover:text-white transition-colors">
-            <Bell size={20} />
-          </button>
+          <NotificationBell />
           <div className="flex items-center">
             <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary-500 text-white">
               <User size={16} />

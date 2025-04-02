@@ -1,5 +1,4 @@
 // src/components/admin/ACHApprovalForm.tsx
-"use client";
 
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -10,7 +9,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Dropdown } from '@/components/ui/Dropdown';
 import { doc, updateDoc, getDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { db, addNotification } from '@/lib/firebase';
 import { ACHBankDetails } from '@/types';
 
 const bankDetailsSchema = z.object({
@@ -48,7 +47,7 @@ const ACHApprovalForm: React.FC<ACHApprovalFormProps> = ({
   initialStatus,
   initialData
 }) => {
-  const [submitting, setSubmitting] = useState(false);
+  const [submitting, setSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<BankDetailsFormData>({
@@ -68,11 +67,11 @@ const ACHApprovalForm: React.FC<ACHApprovalFormProps> = ({
   const accountType = watch('accountType');
   
   // When a new account type is selected from the dropdown
-  const handleAccountTypeChange = (value: string) => {
+  const handleAccountTypeChange = (value: string): void => {
     setValue('accountType', value);
   };
   
-  const handleApprove = async (data: BankDetailsFormData) => {
+  const handleApprove = async (data: BankDetailsFormData): Promise<void> => {
     setSubmitting(true);
     setError(null);
     
@@ -124,6 +123,14 @@ const ACHApprovalForm: React.FC<ACHApprovalFormProps> = ({
           updatedAt: timestamp
         });
       }
+      
+      // Add notification for the user
+      await addNotification({
+        userId: userId,
+        type: 'ach',
+        message: `Your ACH application status has been updated to: ${newStatus}`,
+        relatedId: applicationId
+      });
       
       onSuccess();
     } catch (error) {

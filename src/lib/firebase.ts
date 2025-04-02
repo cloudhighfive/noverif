@@ -1,7 +1,8 @@
 // src/lib/firebase.ts
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut as firebaseSignOut, onAuthStateChanged, User } from "firebase/auth";
-import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, query, where, getDocs, orderBy, limit } from "firebase/firestore";
+import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, query, where, getDocs, orderBy, limit, Timestamp } from "firebase/firestore";
+import { Notification } from "@/types";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -30,7 +31,8 @@ export const signUp = async (email: string, password: string, userData: any) => 
       createdAt: new Date(),
       updatedAt: new Date(),
       virtualBankStatus: "pending", // Initial status
-      wallets: []
+      wallets: [],
+      suspended: false // Initial suspension status
     });
     
     return user;
@@ -126,21 +128,27 @@ export const submitACHApplication = async (userId: string, applicationData: any)
   }
 };
 
-
-export const getTransactions = async (userId: string, limit = 10) => {
+export const getTransactions = async (userId: string, limitCount: number = 10) => {
   try {
     const q = query(
       collection(db, "transactions"),
       where("userId", "==", userId),
       orderBy("createdAt", "desc"),
-      limit(limit)
+      limit(limitCount) // Use a different parameter name to avoid confusion
     );
     
     const querySnapshot = await getDocs(q);
     const transactions: any[] = [];
     
     querySnapshot.forEach((doc) => {
-      transactions.push({ id: doc.id, ...doc.data() });
+      const data = doc.data();
+      transactions.push({ 
+        id: doc.id, 
+        ...data,
+        date: data.date instanceof Timestamp ? data.date.toDate() : data.date,
+        createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate() : data.createdAt,
+        updatedAt: data.updatedAt instanceof Timestamp ? data.updatedAt.toDate() : data.updatedAt
+      });
     });
     
     return transactions;
@@ -171,6 +179,89 @@ export const connectWallet = async (userId: string, wallet: any) => {
     }
   } catch (error) {
     console.error("Error connecting wallet:", error);
+    throw error;
+  }
+};
+
+// New Notification Functions
+export const addNotification = async (
+  notification: Omit<Notification, 'id' | 'read' | 'createdAt'>
+): Promise<string> => {
+  try {
+    const notificationRef = doc(collection(db, "notifications"));
+    await setDoc(notificationRef, {
+      ...notification,
+      read: false,
+      createdAt: new Date()
+    });
+    return notificationRef.id;
+  } catch (error) {
+    console.error("Error adding notification:", error);
+    throw error;
+  }
+};
+
+export const getUnreadNotifications = async (userId: string): Promise<Notification[]> => {
+  try {
+    const q = query(
+      collection(db, "notifications"),
+      where("userId", "==", userId),
+      where("read", "==", false),
+      orderBy("createdAt", "desc")
+    );
+    
+    const querySnapshot = await getDocs(q);
+    const notifications: Notification[] = [];
+    
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      notifications.push({ 
+        id: doc.id, 
+        ...data,
+        createdAt: data.createdAt?.toDate() as Date
+      } as Notification);
+    });
+    
+    return notifications;
+  } catch (error) {
+    console.error("Error getting notifications:", error);
+    throw error;
+  }
+};
+
+export const markNotificationAsRead = async (notificationId: string): Promise<void> => {
+  try {
+    const notificationRef = doc(db, "notifications", notificationId);
+    await updateDoc(notificationRef, {
+      read: true
+    });
+  } catch (error) {
+    console.error("Error marking notification as read:", error);
+    throw error;
+  }
+};
+
+export const markAllNotificationsAsRead = async (userId: string): Promise<void> => {
+  try {
+    const q = query(
+      collection(db, "notifications"),
+      where("userId", "==", userId),
+      where("read", "==", false)
+    );
+    
+    const querySnapshot = await getDocs(q);
+    
+    // Create an array of promises instead of using 'batch'
+    const updatePromises: Promise<void>[] = [];
+    querySnapshot.forEach((document) => {
+      const notificationRef = doc(db, "notifications", document.id);
+      updatePromises.push(updateDoc(notificationRef, { read: true }));
+    });
+    
+    // Execute all update operations in parallel
+    await Promise.all(updatePromises);
+  } catch (error) {
+    console.error("Error marking all notifications as read:", error);
     throw error;
   }
 };

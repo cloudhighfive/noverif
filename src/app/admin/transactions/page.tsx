@@ -13,7 +13,7 @@ import {
   collection, getDocs, doc, updateDoc, getDoc, deleteDoc, query, 
   where, orderBy, addDoc, serverTimestamp, Timestamp, DocumentData 
 } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { db, addNotification } from '@/lib/firebase';
 import { formatCurrency, formatDate } from '@/utils/formatters';
 import { Transaction } from '@/types';
 
@@ -209,16 +209,28 @@ export default function AdminTransactionsPage() {
         updatedAt: serverTimestamp()
       };
       
+      let transactionId: string;
+      
       if (isEditing && selectedTransaction) {
         // Update existing transaction
         await updateDoc(doc(db, 'transactions', selectedTransaction.id), {
           ...transactionData,
           updatedAt: serverTimestamp()
         });
+        transactionId = selectedTransaction.id;
       } else {
         // Create new transaction
-        await addDoc(collection(db, 'transactions'), transactionData);
+        const docRef = await addDoc(collection(db, 'transactions'), transactionData);
+        transactionId = docRef.id;
       }
+      
+      // Add notification for the user
+      await addNotification({
+        userId: formData.userId,
+        type: 'transaction',
+        message: `New ${formData.type} transaction: ${formData.purpose} for ${formatCurrency(parseFloat(formData.amount))}`,
+        relatedId: transactionId
+      });
       
       // Reset and refresh
       resetForm();

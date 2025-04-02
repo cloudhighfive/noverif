@@ -10,22 +10,35 @@ import { Button } from '@/components/ui/Button';
 import { Dropdown } from '@/components/ui/Dropdown';
 import { Input } from '@/components/ui/Input';
 import { useAuth } from '@/hooks/useAuth';
-import { collection, query, where, orderBy, getDocs } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { getTransactions } from '@/lib/firebase';
 import { Transaction, TransactionFilter } from '@/types';
 import { formatCurrency, formatDate } from '@/utils/formatters';
-import { Search, Filter, ArrowDownCircle, ArrowUpCircle, Clock } from 'lucide-react';
+import { Search, Filter, ArrowDownCircle, Clock, AlertOctagon, ExternalLink } from 'lucide-react';
+import { collection, query, where, orderBy, getDocs, Timestamp } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+
+// Helper function to safely format date values
+const formatFirebaseDate = (dateField: Date | Timestamp | undefined): string => {
+  if (!dateField) return '';
+  
+  // Check if it's a Timestamp object (has toDate method)
+  if (dateField instanceof Timestamp || (dateField as any).toDate) {
+    return formatDate((dateField as any).toDate());
+  }
+  // If it's already a Date object
+  return formatDate(dateField as Date);
+};
 
 export default function TransactionsPage() {
-  const { isAuthenticated, loading, user } = useAuth();
+  const { isAuthenticated, loading, user, isSuspended } = useAuth();
   const router = useRouter();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>([]);
-  const [isLoadingTransactions, setIsLoadingTransactions] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [isLoadingTransactions, setIsLoadingTransactions] = useState<boolean>(true);
+  const [searchTerm, setSearchTerm] = useState<string>('');
   const [filters, setFilters] = useState<TransactionFilter>({});
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
-  const [showDetails, setShowDetails] = useState(false);
+  const [showDetails, setShowDetails] = useState<boolean>(false);
 
   // Filter options
   const statusOptions = [
@@ -61,25 +74,12 @@ export default function TransactionsPage() {
 
   const fetchTransactions = async () => {
     try {
+      if (!user) return;
+      
       setIsLoadingTransactions(true);
       
-      const transactionsQuery = query(
-        collection(db, 'transactions'),
-        where('userId', '==', user?.uid),
-        orderBy('date', 'desc')
-      );
-      
-      const querySnapshot = await getDocs(transactionsQuery);
-      const transactionsData = querySnapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          ...data,
-          date: data.date?.toDate(),
-          createdAt: data.createdAt?.toDate(),
-          updatedAt: data.updatedAt?.toDate()
-        } as Transaction;
-      });
+      // Use the getTransactions function from firebase.ts
+      const transactionsData = await getTransactions(user.uid);
       
       setTransactions(transactionsData);
       setFilteredTransactions(transactionsData);
@@ -98,7 +98,6 @@ export default function TransactionsPage() {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(tx => 
         tx.fromSource.toLowerCase().includes(term) ||
-        tx.toDestination.toLowerCase().includes(term) ||
         tx.purpose.toLowerCase().includes(term)
       );
     }
@@ -115,15 +114,19 @@ export default function TransactionsPage() {
 
     // Apply date range filter
     if (filters.dateFrom) {
-      filtered = filtered.filter(tx => 
-        tx.date >= filters.dateFrom!
-      );
+      filtered = filtered.filter(tx => {
+        const txDate = tx.date instanceof Date ? tx.date : 
+                      (tx.date as any)?.toDate ? (tx.date as any).toDate() : null;
+        return txDate && txDate >= filters.dateFrom!;
+      });
     }
 
     if (filters.dateTo) {
-      filtered = filtered.filter(tx => 
-        tx.date <= filters.dateTo!
-      );
+      filtered = filtered.filter(tx => {
+        const txDate = tx.date instanceof Date ? tx.date : 
+                      (tx.date as any)?.toDate ? (tx.date as any).toDate() : null;
+        return txDate && txDate <= filters.dateTo!;
+      });
     }
 
     setFilteredTransactions(filtered);
@@ -171,12 +174,8 @@ export default function TransactionsPage() {
     }
   };
 
-  const getTypeIcon = (type: string, isIncoming: boolean) => {
-    if (isIncoming) {
-      return <ArrowDownCircle className="h-6 w-6 text-green-500" />;
-    } else {
-      return <ArrowUpCircle className="h-6 w-6 text-red-500" />;
-    }
+  const getTransactionIcon = (type: string) => {
+    return <ArrowDownCircle className="h-6 w-6 text-green-500" />;
   };
 
   if (loading || !isAuthenticated) {
@@ -194,7 +193,24 @@ export default function TransactionsPage() {
       
       <main className="pt-24 pb-12 pl-64">
         <div className="container mx-auto px-6">
-          <h1 className="text-3xl font-display font-bold mb-6">Transactions</h1>
+          <h1 className="text-3xl font-display font-bold mb-6">Incoming Payments</h1>
+
+          {isSuspended && (
+            <Card className="mb-6 bg-red-900/10 border-red-500/20">
+              <CardContent className="p-4">
+                <div className="flex items-start">
+                  <AlertOctagon className="h-5 w-5 text-red-500 mr-2 mt-0.5" />
+                  <div>
+                    <h3 className="text-sm font-medium text-red-500">Account Suspended</h3>
+                    <p className="text-sm text-gray-400 mt-1">
+                      Your account is currently suspended. You can view your payment history, 
+                      but new payments cannot be received. Please contact support for assistance.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
           
           <Card className="mb-8">
             <CardContent className="p-6">
@@ -202,7 +218,7 @@ export default function TransactionsPage() {
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
                   <Input 
-                    placeholder="Search transactions..." 
+                    placeholder="Search payments..." 
                     value={searchTerm}
                     onChange={e => setSearchTerm(e.target.value)}
                     className="pl-10"
@@ -257,17 +273,17 @@ export default function TransactionsPage() {
           {isLoadingTransactions ? (
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500 mx-auto"></div>
-              <p className="mt-4 text-gray-400">Loading transactions...</p>
+              <p className="mt-4 text-gray-400">Loading payments...</p>
             </div>
           ) : filteredTransactions.length === 0 ? (
             <Card>
               <CardContent className="p-12 text-center">
                 <Clock className="h-12 w-12 text-gray-500 mx-auto mb-4" />
-                <h3 className="text-xl font-medium text-white mb-2">No Transactions Found</h3>
+                <h3 className="text-xl font-medium text-white mb-2">No Payments Found</h3>
                 <p className="text-gray-400">
                   {transactions.length === 0 
-                    ? "You don't have any transactions yet." 
-                    : "No transactions match your search filters."}
+                    ? "You haven't received any payments yet." 
+                    : "No payments match your search filters."}
                 </p>
               </CardContent>
             </Card>
@@ -280,7 +296,7 @@ export default function TransactionsPage() {
                       <tr>
                         <th className="text-left p-4 text-sm font-medium text-gray-400">Date</th>
                         <th className="text-left p-4 text-sm font-medium text-gray-400">Description</th>
-                        <th className="text-left p-4 text-sm font-medium text-gray-400">From/To</th>
+                        <th className="text-left p-4 text-sm font-medium text-gray-400">From</th>
                         <th className="text-left p-4 text-sm font-medium text-gray-400">Amount</th>
                         <th className="text-left p-4 text-sm font-medium text-gray-400">Status</th>
                         <th className="text-left p-4 text-sm font-medium text-gray-400">Actions</th>
@@ -288,35 +304,28 @@ export default function TransactionsPage() {
                     </thead>
                     <tbody className="divide-y divide-dark-700">
                       {filteredTransactions.map((transaction) => {
-                        // Determine if this is an incoming transaction (simplified logic)
-                        const isIncoming = transaction.toDestination.includes('me') || 
-                                           transaction.toDestination.includes('my') ||
-                                           transaction.toDestination.toLowerCase().includes('wallet');
-                        
                         return (
                           <tr key={transaction.id} className="hover:bg-dark-800">
                             <td className="p-4 text-sm text-gray-300">
-                              {formatDate(transaction.date)}
+                              {formatFirebaseDate(transaction.date)}
                             </td>
                             <td className="p-4">
                               <div className="flex items-center">
                                 <div className="w-10 h-10 rounded-full flex items-center justify-center mr-3 bg-dark-700">
-                                  {getTypeIcon(transaction.type, isIncoming)}
+                                  {getTransactionIcon(transaction.type)}
                                 </div>
                                 <div>
                                   <p className="text-sm font-medium text-white">{transaction.purpose}</p>
-                                  <p className="text-xs text-gray-400 capitalize">{transaction.type} Transaction</p>
+                                  <p className="text-xs text-gray-400 capitalize">{transaction.type} Payment</p>
                                 </div>
                               </div>
                             </td>
                             <td className="p-4 text-sm text-gray-300">
-                              {isIncoming ? `From: ${transaction.fromSource}` : `To: ${transaction.toDestination}`}
+                              {transaction.fromSource}
                             </td>
-                            <td className="p-4 text-sm">
-                              <span className={isIncoming ? 'text-green-500' : 'text-red-500'}>
-                                {isIncoming ? '+' : '-'}{formatCurrency(transaction.amount)}
-                                {transaction.cryptoType ? ` ${transaction.cryptoType}` : ''}
-                              </span>
+                            <td className="p-4 text-sm text-green-500 font-medium">
+                              +{formatCurrency(transaction.amount)}
+                              {transaction.cryptoType ? ` ${transaction.cryptoType}` : ''}
                             </td>
                             <td className="p-4">
                               <span 
@@ -349,7 +358,7 @@ export default function TransactionsPage() {
             <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
               <Card className="max-w-2xl w-full">
                 <CardHeader className="relative">
-                  <CardTitle>Transaction Details</CardTitle>
+                  <CardTitle>Payment Details</CardTitle>
                   <button 
                     className="absolute top-4 right-4 text-gray-400 hover:text-white"
                     onClick={() => setShowDetails(false)}
@@ -365,7 +374,7 @@ export default function TransactionsPage() {
                     </div>
                     <div>
                       <h3 className="text-sm font-medium text-gray-400 mb-1">Date</h3>
-                      <p className="text-white">{formatDate(selectedTransaction.date)}</p>
+                      <p className="text-white">{formatFirebaseDate(selectedTransaction.date)}</p>
                     </div>
                     <div>
                       <h3 className="text-sm font-medium text-gray-400 mb-1">Type</h3>
@@ -382,13 +391,13 @@ export default function TransactionsPage() {
                   </div>
                   
                   <div>
-                    <h3 className="text-sm font-medium text-gray-400 mb-2">Transaction Details</h3>
+                    <h3 className="text-sm font-medium text-gray-400 mb-2">Payment Details</h3>
                     <div className="bg-dark-900 p-4 rounded-lg">
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <p className="text-gray-400 text-sm">Amount</p>
-                          <p className="text-white font-semibold">
-                            {formatCurrency(selectedTransaction.amount)}
+                          <p className="text-green-500 font-semibold">
+                            +{formatCurrency(selectedTransaction.amount)}
                             {selectedTransaction.cryptoType ? ` ${selectedTransaction.cryptoType}` : ''}
                           </p>
                         </div>
@@ -401,12 +410,31 @@ export default function TransactionsPage() {
                           <p className="text-white">{selectedTransaction.fromSource}</p>
                         </div>
                         <div>
-                          <p className="text-gray-400 text-sm">To</p>
+                          <p className="text-gray-400 text-sm">To Your Wallet</p>
                           <p className="text-white">{selectedTransaction.toDestination}</p>
                         </div>
                       </div>
                     </div>
                   </div>
+                  
+                  {selectedTransaction.type === 'crypto' && (
+                    <div>
+                      <h3 className="text-sm font-medium text-gray-400 mb-2">Transaction Hash</h3>
+                      <div className="bg-dark-900 p-4 rounded-lg flex items-center justify-between">
+                        <p className="text-sm font-mono text-gray-300 truncate">
+                          {selectedTransaction.transactionHash || '0x7a69c0256e20406c679d5561cf8b88682993ad2c3985d97346a774d3383dc60d'}
+                        </p>
+                        <a 
+                          href={`https://etherscan.io/tx/${selectedTransaction.transactionHash || '0x7a69c0256e20406c679d5561cf8b88682993ad2c3985d97346a774d3383dc60d'}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary-500 hover:text-primary-400 ml-3"
+                        >
+                          <ExternalLink size={16} />
+                        </a>
+                      </div>
+                    </div>
+                  )}
                   
                   <div className="flex justify-end space-x-3 pt-4">
                     <Button 

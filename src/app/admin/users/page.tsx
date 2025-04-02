@@ -5,23 +5,40 @@ import React, { useEffect, useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { Search, Filter, User, Wallet, CreditCard } from 'lucide-react';
-import { collection, getDocs, doc, getDoc, deleteDoc, query, orderBy } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { Search, Filter, User, Wallet, CreditCard, AlertOctagon } from 'lucide-react';
+import { collection, getDocs, doc, getDoc, updateDoc, query, orderBy, Timestamp } from 'firebase/firestore';
+import { db, addNotification } from '@/lib/firebase';
 import { formatDate } from '@/utils/formatters';
+import { UserProfile } from '@/types';
+
+// Add this helper function at the top of your component
+const formatFirebaseDate = (dateField: any): string => {
+  if (!dateField) return 'Unknown';
+  
+  // Check if it's a Timestamp object (has toDate method)
+  if (dateField instanceof Timestamp || dateField.toDate) {
+    return formatDate(dateField.toDate());
+  }
+  // If it's already a Date object
+  else if (dateField instanceof Date) {
+    return formatDate(dateField);
+  }
+  // Default fallback
+  return 'Invalid date';
+};
 
 export default function UsersAdmin() {
-  const [users, setUsers] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedUser, setSelectedUser] = useState<any>(null);
-  const [showDetails, setShowDetails] = useState(false);
+  const [users, setUsers] = useState<UserProfile[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
+  const [showDetails, setShowDetails] = useState<boolean>(false);
   
   useEffect(() => {
     fetchUsers();
   }, []);
   
-  const fetchUsers = async () => {
+  const fetchUsers = async (): Promise<void> => {
     try {
       setLoading(true);
       
@@ -34,13 +51,52 @@ export default function UsersAdmin() {
       const usersData = querySnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
-      }));
+      })) as UserProfile[];
       
       setUsers(usersData);
       setLoading(false);
     } catch (error) {
       console.error("Error fetching users:", error);
       setLoading(false);
+    }
+  };
+  
+  const toggleUserSuspension = async (userId: string, currentSuspended: boolean): Promise<void> => {
+    try {
+      await updateDoc(doc(db, 'users', userId), {
+        suspended: !currentSuspended,
+        updatedAt: new Date()
+      });
+      
+      // Update local state
+      setUsers(users.map(user => {
+        if (user.id === userId) {
+          return { ...user, suspended: !currentSuspended };
+        }
+        return user;
+      }));
+      
+      // Update selected user if in details view
+      if (selectedUser && selectedUser.id === userId) {
+        setSelectedUser({
+          ...selectedUser,
+          suspended: !currentSuspended
+        });
+      }
+      
+      // Add notification to inform the user
+      await addNotification({
+        userId: userId,
+        type: 'system',
+        message: currentSuspended 
+          ? 'Your account has been reactivated. You now have full access to all features.' 
+          : 'Your account has been suspended. Please contact support for assistance.'
+      });
+      
+      alert(`User ${currentSuspended ? 'activated' : 'suspended'} successfully`);
+    } catch (error) {
+      console.error("Error toggling user suspension:", error);
+      alert('Failed to update user status');
     }
   };
   
@@ -53,7 +109,7 @@ export default function UsersAdmin() {
         return;
       }
       
-      const userData = { id: userDoc.id, ...userDoc.data() };
+      const userData = { id: userDoc.id, ...userDoc.data() } as UserProfile;
       
       // Get user's ACH applications
       const applications: any[] = [];
@@ -140,7 +196,7 @@ export default function UsersAdmin() {
                     <th className="text-left p-4 text-sm font-medium text-gray-400">Email</th>
                     <th className="text-left p-4 text-sm font-medium text-gray-400">Joined</th>
                     <th className="text-left p-4 text-sm font-medium text-gray-400">Bank Status</th>
-                    <th className="text-left p-4 text-sm font-medium text-gray-400">Wallets</th>
+                    <th className="text-left p-4 text-sm font-medium text-gray-400">Account Status</th>
                     <th className="text-left p-4 text-sm font-medium text-gray-400">Actions</th>
                   </tr>
                 </thead>
@@ -157,7 +213,7 @@ export default function UsersAdmin() {
                       </td>
                       <td className="p-4 text-sm text-gray-300">{user.email}</td>
                       <td className="p-4 text-sm text-gray-300">
-                        {user.createdAt ? formatDate(user.createdAt.toDate()) : 'Unknown'}
+                        {user.createdAt ? formatDate(user.createdAt as Date) : 'Unknown'}
                       </td>
                       <td className="p-4">
                         <span 
@@ -174,8 +230,16 @@ export default function UsersAdmin() {
                           {user.virtualBankStatus || 'None'}
                         </span>
                       </td>
-                      <td className="p-4 text-sm text-gray-300">
-                        {user.wallets?.length || 0}
+                      <td className="p-4">
+                        <span 
+                          className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
+                            user.suspended 
+                              ? 'bg-red-500/10 text-red-500' 
+                              : 'bg-green-500/10 text-green-500'
+                          }`}
+                        >
+                          {user.suspended ? 'Suspended' : 'Active'}
+                        </span>
                       </td>
                       <td className="p-4">
                         <div className="flex space-x-2">
@@ -185,6 +249,14 @@ export default function UsersAdmin() {
                             onClick={() => viewUserDetails(user.id)}
                           >
                             Details
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            className={user.suspended ? 'border-green-500 text-green-500' : 'border-red-500 text-red-500'}
+                            onClick={() => toggleUserSuspension(user.id, user.suspended || false)}
+                          >
+                            {user.suspended ? 'Activate' : 'Suspend'}
                           </Button>
                         </div>
                       </td>
@@ -218,6 +290,15 @@ export default function UsersAdmin() {
                 <div>
                   <h2 className="text-xl font-medium text-white">{selectedUser.name}</h2>
                   <p className="text-gray-400">{selectedUser.email}</p>
+                  <span 
+                    className={`inline-block px-2 py-1 rounded-full text-xs font-medium mt-2 ${
+                      selectedUser.suspended 
+                        ? 'bg-red-500/10 text-red-500' 
+                        : 'bg-green-500/10 text-green-500'
+                    }`}
+                  >
+                    {selectedUser.suspended ? 'Suspended' : 'Active'}
+                  </span>
                 </div>
               </div>
               
@@ -229,7 +310,7 @@ export default function UsersAdmin() {
                 <div>
                   <h3 className="text-sm font-medium text-gray-400 mb-1">Joined</h3>
                   <p className="text-white">
-                    {selectedUser.createdAt ? formatDate(selectedUser.createdAt.toDate()) : 'Unknown'}
+                    {selectedUser.createdAt ? formatFirebaseDate(selectedUser.createdAt) : 'Unknown'}
                   </p>
                 </div>
                 <div>
@@ -270,13 +351,13 @@ export default function UsersAdmin() {
                       
                       {selectedUser.virtualBankCreatedAt && (
                         <p className="text-xs text-gray-400 mt-1">
-                          Created on: {formatDate(selectedUser.virtualBankCreatedAt.toDate())}
+                          Created on: {formatFirebaseDate(selectedUser.virtualBankCreatedAt)}
                         </p>
                       )}
                       
                       {selectedUser.virtualBankCompletedAt && (
                         <p className="text-xs text-gray-400 mt-1">
-                          Completed on: {formatDate(selectedUser.virtualBankCompletedAt.toDate())}
+                          Completed on: {formatFirebaseDate(selectedUser.virtualBankCompletedAt)}
                         </p>
                       )}
                     </div>
@@ -300,7 +381,7 @@ export default function UsersAdmin() {
                             <p className="text-xs text-gray-400 font-mono">{wallet.address}</p>
                             {wallet.connectedAt && (
                               <p className="text-xs text-gray-500 mt-1">
-                                Connected on: {formatDate(wallet.connectedAt.toDate())}
+                                Connected on: {formatFirebaseDate(wallet.connectedAt)}
                               </p>
                             )}
                           </div>
@@ -330,7 +411,7 @@ export default function UsersAdmin() {
                             <p className="text-xs text-gray-400">Purpose: {app.purpose}</p>
                             {app.createdAt && (
                               <p className="text-xs text-gray-500 mt-1">
-                                Applied on: {formatDate(app.createdAt.toDate())}
+                                Applied on: {formatFirebaseDate(app.createdAt)}
                               </p>
                             )}
                           </div>
@@ -364,6 +445,13 @@ export default function UsersAdmin() {
                   onClick={() => setShowDetails(false)}
                 >
                   Close
+                </Button>
+                <Button 
+                  variant={selectedUser.suspended ? 'outline' : 'outline'}
+                  className={selectedUser.suspended ? 'border-green-500 text-green-500' : 'border-red-500 text-red-500'}
+                  onClick={() => toggleUserSuspension(selectedUser.id, selectedUser.suspended || false)}
+                >
+                  {selectedUser.suspended ? 'Activate Account' : 'Suspend Account'}
                 </Button>
               </div>
             </CardContent>
