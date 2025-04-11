@@ -76,9 +76,9 @@ export default function ACHApplication() {
         <DashboardSidebar />
         <DashboardHeader />
         
-        <main className="pt-24 pb-12 pl-64">
-          <div className="container mx-auto px-6">
-            <Card className="max-w-2xl mx-auto">
+        <main className="pt-20 pb-16 md:pt-24 md:pb-12 md:pl-64 px-4">
+          <div className="container mx-auto max-w-2xl">
+            <Card className="mx-auto">
               <CardContent className="pt-6">
                 <div className="text-center py-8">
                   <div className="w-16 h-16 mx-auto bg-green-500 rounded-full flex items-center justify-center mb-4">
@@ -86,7 +86,7 @@ export default function ACHApplication() {
                       <path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
                     </svg>
                   </div>
-                  <h2 className="text-2xl font-semibold text-white mb-2">Virtual Bank Account Active</h2>
+                  <h2 className="text-xl md:text-2xl font-semibold text-white mb-2">Virtual Bank Account Active</h2>
                   <p className="text-gray-400 mb-6">
                     Your virtual bank account is already set up and ready to use.
                   </p>
@@ -108,9 +108,9 @@ export default function ACHApplication() {
         <DashboardSidebar />
         <DashboardHeader />
         
-        <main className="pt-24 pb-12 pl-64">
-          <div className="container mx-auto px-6">
-            <Card className="max-w-2xl mx-auto">
+        <main className="pt-20 pb-16 md:pt-24 md:pb-12 md:pl-64 px-4">
+          <div className="container mx-auto max-w-2xl">
+            <Card className="mx-auto">
               <CardContent className="pt-6">
                 <div className="text-center py-8">
                   <div className="w-16 h-16 mx-auto bg-yellow-500 rounded-full flex items-center justify-center mb-4">
@@ -118,7 +118,7 @@ export default function ACHApplication() {
                       <path fill="currentColor" d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.4 0-8-3.6-8-8s3.6-8 8-8 8 3.6 8 8-3.6 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
                     </svg>
                   </div>
-                  <h2 className="text-2xl font-semibold text-white mb-2">Application In Progress</h2>
+                  <h2 className="text-xl md:text-2xl font-semibold text-white mb-2">Application In Progress</h2>
                   <p className="text-gray-400 mb-6">
                     Your virtual bank account application is being processed. This typically takes 1-2 days.
                   </p>
@@ -139,17 +139,17 @@ export default function ACHApplication() {
       <DashboardSidebar />
       <DashboardHeader />
       
-      <main className="pt-24 pb-12 pl-64">
-        <div className="container mx-auto px-6">
+      <main className="pt-20 pb-16 md:pt-24 md:pb-12 md:pl-64 px-4">
+        <div className="container mx-auto max-w-2xl">
           <div className="mb-6">
-            <h1 className="text-3xl font-display font-bold mb-2">ACH Application</h1>
+            <h1 className="text-2xl md:text-3xl font-display font-bold mb-2">ACH Application</h1>
             <p className="text-gray-400">
               Complete this form to set up your virtual bank account
             </p>
           </div>
           
           {isSuccess ? (
-            <Card className="max-w-2xl">
+            <Card>
               <CardContent className="pt-6">
                 <div className="text-center py-8">
                   <div className="w-16 h-16 mx-auto bg-green-500 rounded-full flex items-center justify-center mb-4">
@@ -157,7 +157,7 @@ export default function ACHApplication() {
                       <path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
                     </svg>
                   </div>
-                  <h2 className="text-2xl font-semibold text-white mb-2">Application Submitted!</h2>
+                  <h2 className="text-xl md:text-2xl font-semibold text-white mb-2">Application Submitted!</h2>
                   <p className="text-gray-400 mb-6">
                     Your virtual bank account will be ready in 1–2 days. No paperwork, no calls.
                   </p>
@@ -169,7 +169,7 @@ export default function ACHApplication() {
             </Card>
           ) : (
             <form onSubmit={handleSubmit(onSubmit)}>
-              <Card className="max-w-2xl">
+              <Card>
                 <CardHeader>
                   <CardTitle>Virtual Bank Account Application</CardTitle>
                   <CardDescription>

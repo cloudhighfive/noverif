@@ -25,7 +25,7 @@ interface CardHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
 const CardHeader = ({ children, className = '', ...props }: CardHeaderProps) => {
   return (
     <div 
-      className={`p-6 border-b border-dark-700 ${className}`}
+      className={`px-4 py-5 sm:p-6 border-b border-dark-700 ${className}`}
       {...props}
     >
       {children}
@@ -73,7 +73,7 @@ interface CardContentProps extends React.HTMLAttributes<HTMLDivElement> {
 const CardContent = ({ children, className = '', ...props }: CardContentProps) => {
   return (
     <div 
-      className={`p-6 ${className}`}
+      className={`px-4 py-5 sm:p-6 ${className}`}
       {...props}
     >
       {children}
@@ -89,7 +89,7 @@ interface CardFooterProps extends React.HTMLAttributes<HTMLDivElement> {
 const CardFooter = ({ children, className = '', ...props }: CardFooterProps) => {
   return (
     <div 
-      className={`p-6 border-t border-dark-700 ${className}`}
+      className={`px-4 py-4 sm:px-6 border-t border-dark-700 ${className}`}
       {...props}
     >
       {children}

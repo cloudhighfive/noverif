@@ -7,8 +7,8 @@ const Footer = () => {
 
   return (
     <footer className="bg-dark-900 border-t border-dark-800 py-12">
-      <div className="container">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+      <div className="container px-4 mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
           <div className="space-y-4">
             <Link href="/" className="flex items-center">
               <span className="text-2xl font-display font-bold gradient-text">NoVerif</span>
@@ -44,7 +44,7 @@ const Footer = () => {
             </ul>
           </div>
 
-          <div>
+          <div className="sm:col-span-2 md:col-span-1">
             <h3 className="text-white font-medium mb-4">Company</h3>
             <ul className="space-y-2">
               <li>
@@ -65,7 +65,7 @@ const Footer = () => {
             </ul>
           </div>
 
-          <div>
+          <div className="sm:col-span-2 md:col-span-1">
             <h3 className="text-white font-medium mb-4">Legal</h3>
             <ul className="space-y-2">
               <li>

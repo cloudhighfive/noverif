@@ -40,13 +40,13 @@ const FAQ = () => {
   };
 
   return (
-    <section id="faq" className="py-20">
-      <div className="container">
+    <section id="faq" className="py-16 md:py-20">
+      <div className="container px-4 mx-auto">
         <div className="text-center mb-12">
-          <h2 className="font-display font-bold mb-4">
+          <h2 className="font-display font-bold mb-4 text-2xl md:text-3xl lg:text-4xl">
             <span className="gradient-text">Frequently Asked Questions</span>
           </h2>
-          <p className="text-xl text-gray-300 max-w-2xl mx-auto">
+          <p className="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto">
             Got questions? We've got answers. If you don't see what you're looking for, feel free to contact our support team.
           </p>
         </div>
@@ -58,18 +58,18 @@ const FAQ = () => {
               className="mb-4 last:mb-0 border-dark-700 hover:border-dark-600 transition-colors overflow-hidden"
             >
               <button 
-                className="w-full text-left p-6 flex justify-between items-center focus:outline-none"
+                className="w-full text-left p-4 sm:p-6 flex justify-between items-center focus:outline-none"
                 onClick={() => toggleFAQ(index)}
               >
-                <h3 className="text-lg font-medium text-white">{faq.question}</h3>
+                <h3 className="text-base sm:text-lg font-medium text-white pr-2">{faq.question}</h3>
                 {openIndex === index ? (
-                  <ChevronUp className="h-5 w-5 text-gray-400" />
+                  <ChevronUp className="h-5 w-5 text-gray-400 flex-shrink-0" />
                 ) : (
-                  <ChevronDown className="h-5 w-5 text-gray-400" />
+                  <ChevronDown className="h-5 w-5 text-gray-400 flex-shrink-0" />
                 )}
               </button>
               {openIndex === index && (
-                <CardContent className="pt-0 pb-6 px-6">
+                <CardContent className="pt-0 pb-4 sm:pb-6 px-4 sm:px-6">
                   <p className="text-gray-400">{faq.answer}</p>
                 </CardContent>
               )}

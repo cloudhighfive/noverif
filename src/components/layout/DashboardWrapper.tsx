@@ -19,8 +19,8 @@ const DashboardWrapper: React.FC<DashboardWrapperProps> = ({ children }) => {
       <DashboardSidebar />
       <DashboardHeader />
       
-      <main className="pt-24 pb-12 pl-64">
-        <div className="container mx-auto px-6">
+      <main className="pt-24 pb-20 md:pl-64 px-4 md:px-6">
+        <div className="container mx-auto">
           {children}
         </div>
       </main>

@@ -52,13 +52,13 @@ const VirtualBankDetails = () => {
           </div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
           <div>
             <h4 className="text-sm font-medium text-gray-400 mb-1">Account Holder</h4>
             <div className="flex items-center justify-between">
-              <p className="text-white">{bankDetails.accountOwner}</p>
+              <p className="text-white truncate pr-2">{bankDetails.accountOwner}</p>
               <button 
-                className="text-gray-400 hover:text-white p-1 rounded-full hover:bg-dark-700"
+                className="text-gray-400 hover:text-white p-1 rounded-full hover:bg-dark-700 flex-shrink-0"
                 onClick={() => handleCopy(bankDetails.accountOwner, 'accountOwner')}
               >
                 {copiedField === 'accountOwner' ? (
@@ -73,8 +73,8 @@ const VirtualBankDetails = () => {
           <div>
             <h4 className="text-sm font-medium text-gray-400 mb-1">Account Number</h4>
             <div className="flex items-center justify-between">
-              <p className="text-white font-mono">{maskedAccountNumber}</p>
-              <div className="flex items-center">
+              <p className="text-white font-mono truncate pr-2">{maskedAccountNumber}</p>
+              <div className="flex items-center flex-shrink-0">
                 <button 
                   className="text-gray-400 hover:text-white p-1 rounded-full hover:bg-dark-700 mr-1"
                   onClick={toggleAccountNumberVisibility}
@@ -102,9 +102,9 @@ const VirtualBankDetails = () => {
           <div>
             <h4 className="text-sm font-medium text-gray-400 mb-1">Routing Number (ABA)</h4>
             <div className="flex items-center justify-between">
-              <p className="text-white font-mono">{bankDetails.routingNumber}</p>
+              <p className="text-white font-mono truncate pr-2">{bankDetails.routingNumber}</p>
               <button 
-                className="text-gray-400 hover:text-white p-1 rounded-full hover:bg-dark-700"
+                className="text-gray-400 hover:text-white p-1 rounded-full hover:bg-dark-700 flex-shrink-0"
                 onClick={() => handleCopy(bankDetails.routingNumber, 'routingNumber')}
               >
                 {copiedField === 'routingNumber' ? (
@@ -120,9 +120,9 @@ const VirtualBankDetails = () => {
             <div>
               <h4 className="text-sm font-medium text-gray-400 mb-1">SWIFT Code</h4>
               <div className="flex items-center justify-between">
-                <p className="text-white font-mono">{bankDetails.swiftCode}</p>
+                <p className="text-white font-mono truncate pr-2">{bankDetails.swiftCode}</p>
                 <button 
-                  className="text-gray-400 hover:text-white p-1 rounded-full hover:bg-dark-700"
+                  className="text-gray-400 hover:text-white p-1 rounded-full hover:bg-dark-700 flex-shrink-0"
                   onClick={() => handleCopy(bankDetails.swiftCode as string, 'swiftCode')}
                 >
                   {copiedField === 'swiftCode' ? (
@@ -138,12 +138,12 @@ const VirtualBankDetails = () => {
         
         <div>
           <h4 className="text-sm font-medium text-gray-400 mb-1">Bank Address</h4>
-          <p className="text-white">{bankDetails.bankAddress}</p>
+          <p className="text-white break-words">{bankDetails.bankAddress}</p>
         </div>
         
         <div className="bg-dark-900 p-4 rounded-lg mt-4">
           <div className="flex items-start">
-            <svg viewBox="0 0 24 24" className="w-5 h-5 text-primary-500 mr-3 mt-0.5 fill-current">
+            <svg viewBox="0 0 24 24" className="w-5 h-5 text-primary-500 mr-3 mt-0.5 flex-shrink-0 fill-current">
               <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 100-16 8 8 0 000 16zM11 7h2v2h-2V7zm0 4h2v6h-2v-6z"/>
             </svg>
             <div>

@@ -32,7 +32,7 @@ export interface UserProfile {
   email: string;
   phone?: string;
   address?: string;
-  createdAt: Date | Timestamp;  // Using imported Timestamp type
+  createdAt: Date | Timestamp;
   updatedAt?: Date | Timestamp;
   virtualBankStatus: 'pending' | 'in_progress' | 'completed' | 'rejected';
   virtualBankCreatedAt?: Date | Timestamp;
@@ -41,6 +41,7 @@ export interface UserProfile {
   bankDetails?: ACHBankDetails;
   suspended?: boolean;
   applications?: any[];
+  walletAddress?: string; // Add this line
 }
 
 export interface WalletInfo {

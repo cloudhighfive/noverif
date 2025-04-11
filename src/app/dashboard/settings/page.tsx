@@ -67,7 +67,7 @@ export default function SettingsPage() {
   const profileForm = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      walletAddress: userData?.walletAddress || '',
+      walletAddress: '',
     },
   });
   
@@ -156,13 +156,13 @@ export default function SettingsPage() {
       <DashboardSidebar />
       <DashboardHeader />
       
-      <main className="pt-24 pb-12 pl-64">
-        <div className="container mx-auto px-6">
-          <h1 className="text-3xl font-display font-bold mb-6">Settings</h1>
+      <main className="pt-20 pb-16 md:pt-24 md:pb-12 md:pl-64 px-4">
+        <div className="container mx-auto">
+          <h1 className="text-2xl md:text-3xl font-display font-bold mb-6">Settings</h1>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Profile Settings */}
-            <div className="md:col-span-2">
+            <div className="lg:col-span-2 order-2 lg:order-1">
               <Card>
                 <CardHeader>
                   <CardTitle>Profile Settings</CardTitle>
@@ -175,8 +175,8 @@ export default function SettingsPage() {
                     {/* Personal Information - Disabled fields */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-400">
-                          <User className="inline-block w-4 h-4 mr-1" />
+                        <label className="flex items-center gap-1 text-sm font-medium text-gray-400">
+                          <User className="w-4 h-4" />
                           Full Name
                         </label>
                         <Input
@@ -188,8 +188,8 @@ export default function SettingsPage() {
                       </div>
                       
                       <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-400">
-                          <Mail className="inline-block w-4 h-4 mr-1" />
+                        <label className="flex items-center gap-1 text-sm font-medium text-gray-400">
+                          <Mail className="w-4 h-4" />
                           Email Address
                         </label>
                         <Input
@@ -201,8 +201,8 @@ export default function SettingsPage() {
                       </div>
                       
                       <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-400">
-                          <Phone className="inline-block w-4 h-4 mr-1" />
+                        <label className="flex items-center gap-1 text-sm font-medium text-gray-400">
+                          <Phone className="w-4 h-4" />
                           Phone Number
                         </label>
                         <Input
@@ -214,8 +214,8 @@ export default function SettingsPage() {
                       </div>
                       
                       <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-400">
-                          <MapPin className="inline-block w-4 h-4 mr-1" />
+                        <label className="flex items-center gap-1 text-sm font-medium text-gray-400">
+                          <MapPin className="w-4 h-4" />
                           Address
                         </label>
                         <Input
@@ -256,7 +256,7 @@ export default function SettingsPage() {
                     
                     <div className="bg-dark-900 p-4 rounded-lg mt-4">
                       <div className="flex items-start">
-                        <svg viewBox="0 0 24 24" className="w-5 h-5 text-primary-500 mr-2 mt-0.5 fill-current">
+                        <svg viewBox="0 0 24 24" className="w-5 h-5 text-primary-500 mr-2 mt-0.5 flex-shrink-0 fill-current">
                           <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 100-16 8 8 0 000 16zM11 7h2v2h-2V7zm0 4h2v6h-2v-6z"/>
                         </svg>
                         <div>
@@ -284,7 +284,7 @@ export default function SettingsPage() {
             </div>
             
             {/* Password Change */}
-            <div>
+            <div className="order-1 lg:order-2">
               <Card>
                 <CardHeader>
                   <CardTitle>Change Password</CardTitle>
@@ -337,7 +337,7 @@ export default function SettingsPage() {
                     
                     <div className="bg-dark-900 p-4 rounded-lg">
                       <div className="flex items-start">
-                        <Lock className="h-5 w-5 text-primary-500 mr-2 mt-0.5" />
+                        <Lock className="h-5 w-5 text-primary-500 mr-2 mt-0.5 flex-shrink-0" />
                         <div>
                           <p className="text-gray-300 text-sm">
                             Password must be at least 8 characters long and include uppercase, lowercase, and numbers.
@@ -351,6 +351,7 @@ export default function SettingsPage() {
                       type="submit"
                       leftIcon={<Lock size={16} />}
                       isLoading={changingPassword}
+                      fullWidth
                     >
                       Change Password
                     </Button>
