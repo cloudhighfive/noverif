@@ -4,33 +4,47 @@
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { FileText } from 'lucide-react';
-import { generateInvoice } from '@/lib/invoiceGenerator';
+import { FileText, CreditCard, PlusCircle } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/hooks/useAuth';
 
 const QuickActions = () => {
-  const handleGenerateInvoice = async () => {
-    try {
-      await generateInvoice();
-      // Show success notification or redirect to invoice
-    } catch (error) {
-      console.error("Error generating invoice:", error);
-      // Show error notification
-    }
-  };
+  const router = useRouter();
+  const { isSuspended } = useAuth();
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>Quick Actions</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-3">
+        <Button
+          variant="secondary"
+          className="w-full justify-start"
+          leftIcon={<PlusCircle className="h-4 w-4" />}
+          onClick={() => router.push('/dashboard/invoices/create')}
+          disabled={isSuspended}
+        >
+          Create Invoice
+        </Button>
+        
         <Button
           variant="secondary"
           className="w-full justify-start"
           leftIcon={<FileText className="h-4 w-4" />}
-          onClick={handleGenerateInvoice}
+          onClick={() => router.push('/dashboard/invoices')}
         >
-          Generate Invoice
+          View Invoices
+        </Button>
+        
+        <Button
+          variant="secondary"
+          className="w-full justify-start"
+          leftIcon={<CreditCard className="h-4 w-4" />}
+          onClick={() => router.push('/dashboard/ach-application')}
+          disabled={isSuspended}
+        >
+          ACH Application
         </Button>
       </CardContent>
     </Card>

@@ -1,8 +1,22 @@
 // src/lib/firebase.ts
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut as firebaseSignOut, onAuthStateChanged, User } from "firebase/auth";
-import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, query, where, getDocs, orderBy, limit, Timestamp } from "firebase/firestore";
-import { Notification } from "@/types";
+import { 
+  getFirestore, 
+  doc, 
+  setDoc, 
+  getDoc, 
+  updateDoc, 
+  collection, 
+  query, 
+  where, 
+  getDocs, 
+  orderBy, 
+  limit, 
+  Timestamp,
+  deleteDoc // Add this import
+} from "firebase/firestore";
+import { Notification, Invoice } from "@/types";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -262,6 +276,160 @@ export const markAllNotificationsAsRead = async (userId: string): Promise<void> 
     await Promise.all(updatePromises);
   } catch (error) {
     console.error("Error marking all notifications as read:", error);
+    throw error;
+  }
+};
+
+// Create a new invoice
+export const createInvoice = async (userId: string, invoiceData: Omit<Invoice, 'id' | 'userId' | 'createdAt' | 'updatedAt'>): Promise<string> => {
+  try {
+    const invoiceRef = doc(collection(db, "invoices"));
+    const timestamp = new Date();
+    
+    // Create a clean data object without undefined values
+    const cleanedData = { ...invoiceData };
+    
+    // Remove undefined fields or replace with null
+    if (cleanedData.recurringFrequency === undefined) {
+      delete cleanedData.recurringFrequency; // Remove the field entirely
+      // OR set it to null: cleanedData.recurringFrequency = null;
+    }
+    
+    await setDoc(invoiceRef, {
+      ...cleanedData,
+      id: invoiceRef.id,
+      userId,
+      createdAt: timestamp,
+      updatedAt: timestamp,
+      status: 'draft'
+    });
+    
+    return invoiceRef.id;
+  } catch (error) {
+    console.error("Error creating invoice:", error);
+    throw error;
+  }
+};
+
+// Get all invoices for a user
+export const getUserInvoices = async (userId: string): Promise<Invoice[]> => {
+  try {
+    const q = query(
+      collection(db, "invoices"),
+      where("userId", "==", userId),
+      orderBy("createdAt", "desc")
+    );
+    
+    const querySnapshot = await getDocs(q);
+    const invoices: Invoice[] = [];
+    
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      invoices.push({
+        ...data,
+        id: doc.id,
+        issueDate: data.issueDate instanceof Timestamp ? data.issueDate.toDate() : data.issueDate,
+        dueDate: data.dueDate instanceof Timestamp ? data.dueDate.toDate() : data.dueDate,
+        createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate() : data.createdAt,
+        updatedAt: data.updatedAt instanceof Timestamp ? data.updatedAt.toDate() : data.updatedAt
+      } as Invoice);
+    });
+    
+    return invoices;
+  } catch (error) {
+    console.error("Error getting invoices:", error);
+    throw error;
+  }
+};
+
+// Get a single invoice by ID
+export const getInvoiceById = async (invoiceId: string): Promise<Invoice | null> => {
+  try {
+    const invoiceDoc = await getDoc(doc(db, "invoices", invoiceId));
+    
+    if (!invoiceDoc.exists()) {
+      return null;
+    }
+    
+    const data = invoiceDoc.data();
+    return {
+      ...data,
+      id: invoiceDoc.id,
+      issueDate: data.issueDate instanceof Timestamp ? data.issueDate.toDate() : data.issueDate,
+      dueDate: data.dueDate instanceof Timestamp ? data.dueDate.toDate() : data.dueDate,
+      createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate() : data.createdAt,
+      updatedAt: data.updatedAt instanceof Timestamp ? data.updatedAt.toDate() : data.updatedAt
+    } as Invoice;
+  } catch (error) {
+    console.error("Error getting invoice:", error);
+    throw error;
+  }
+};
+
+// Update an invoice
+export const updateInvoice = async (invoiceId: string, invoiceData: Partial<Invoice>): Promise<void> => {
+  try {
+    const invoiceRef = doc(db, "invoices", invoiceId);
+    await updateDoc(invoiceRef, {
+      ...invoiceData,
+      updatedAt: new Date()
+    });
+  } catch (error) {
+    console.error("Error updating invoice:", error);
+    throw error;
+  }
+};
+
+// Delete an invoice
+export const deleteInvoice = async (invoiceId: string): Promise<void> => {
+  try {
+    await deleteDoc(doc(db, "invoices", invoiceId));
+  } catch (error) {
+    console.error("Error deleting invoice:", error);
+    throw error;
+  }
+};
+
+// Get all invoices (admin function)
+export const getAllInvoices = async (): Promise<Invoice[]> => {
+  try {
+    const q = query(
+      collection(db, "invoices"),
+      orderBy("createdAt", "desc")
+    );
+    
+    const querySnapshot = await getDocs(q);
+    const invoices: Invoice[] = [];
+    
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      invoices.push({
+        id: doc.id,
+        ...data,
+        issueDate: data.issueDate instanceof Timestamp ? data.issueDate.toDate() : data.issueDate,
+        dueDate: data.dueDate instanceof Timestamp ? data.dueDate.toDate() : data.dueDate,
+        createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate() : data.createdAt,
+        updatedAt: data.updatedAt instanceof Timestamp ? data.updatedAt.toDate() : data.updatedAt
+      } as Invoice);
+    });
+    
+    return invoices;
+  } catch (error) {
+    console.error("Error getting all invoices:", error);
+    throw error;
+  }
+};
+
+// Update invoice status (admin function)
+export const updateInvoiceStatus = async (invoiceId: string, status: 'draft' | 'sent' | 'paid' | 'overdue'): Promise<void> => {
+  try {
+    const invoiceRef = doc(db, "invoices", invoiceId);
+    await updateDoc(invoiceRef, {
+      status,
+      updatedAt: new Date()
+    });
+  } catch (error) {
+    console.error("Error updating invoice status:", error);
     throw error;
   }
 };

@@ -84,3 +84,33 @@ export interface Notification {
   createdAt: Date | Timestamp;
   relatedId?: string; // ID of related transaction or application
 }
+
+export interface InvoiceItem {
+  id: string;
+  description: string;
+  quantity: number;
+  price: number;
+  amount: number;
+}
+
+export interface Invoice {
+  id: string;
+  userId: string;
+  user?: any; // For admin views
+  invoiceNumber: string;
+  clientName: string;
+  clientEmail?: string;
+  clientAddress?: string;
+  issueDate: Date | Timestamp;
+  dueDate: Date | Timestamp;
+  items: InvoiceItem[];
+  notes?: string;
+  subtotal: number;
+  tax: number;
+  total: number;
+  status: 'draft' | 'sent' | 'paid' | 'overdue';
+  createdAt: Date | Timestamp;
+  updatedAt?: Date | Timestamp;
+  isRecurring?: boolean;
+  recurringFrequency?: 'monthly' | 'quarterly' | 'yearly';
+}

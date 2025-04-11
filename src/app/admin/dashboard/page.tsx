@@ -3,7 +3,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
-import { Users, CreditCard, Wallet, FileText } from 'lucide-react';
+import { Users, CreditCard, Wallet, FileText, BarChart } from 'lucide-react';
 import { collection, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { formatDate } from '@/utils/formatters';
@@ -13,7 +13,8 @@ export default function AdminDashboard() {
     totalUsers: 0,
     pendingApplications: 0,
     activeWallets: 0,
-    totalTransactions: 0
+    totalTransactions: 0,
+    totalInvoices: 0
   });
   
   const [recentUsers, setRecentUsers] = useState<any[]>([]);
@@ -72,11 +73,16 @@ export default function AdminDashboard() {
         const transactionsSnapshot = await getDocs(collection(db, 'transactions'));
         const totalTransactions = transactionsSnapshot.size;
         
+        // Fetch invoices count
+        const invoicesSnapshot = await getDocs(collection(db, 'invoices'));
+        const totalInvoices = invoicesSnapshot.size;
+        
         setStats({
           totalUsers,
           pendingApplications,
           activeWallets: walletCount,
-          totalTransactions
+          totalTransactions,
+          totalInvoices
         });
         
         setRecentUsers(recentUsersData);
@@ -104,7 +110,7 @@ export default function AdminDashboard() {
       <h1 className="text-3xl font-display font-bold mb-6">Admin Dashboard</h1>
       
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center">
@@ -156,6 +162,20 @@ export default function AdminDashboard() {
               <div>
                 <p className="text-sm text-gray-400">Total Transactions</p>
                 <h3 className="text-2xl font-semibold text-white">{stats.totalTransactions}</h3>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <div className="w-12 h-12 rounded-full bg-purple-500/10 flex items-center justify-center mr-4">
+                <FileText className="h-6 w-6 text-purple-500" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-400">Total Invoices</p>
+                <h3 className="text-2xl font-semibold text-white">{stats.totalInvoices}</h3>
               </div>
             </div>
           </CardContent>
@@ -253,6 +273,42 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
       </div>
+      
+      {/* Recent Invoices and Transactions */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent Invoices</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center py-4">
+              <a 
+                href="/admin/invoices"
+                className="text-sm text-primary-500 hover:underline"
+              >
+                View all invoices &rarr;
+              </a>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent Transactions</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center py-4">
+              <a 
+                href="/admin/transactions"
+                className="text-sm text-primary-500 hover:underline"
+              >
+                View all transactions &rarr;
+              </a>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
+              

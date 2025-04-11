@@ -8,7 +8,8 @@ import {
   Users, CreditCard, Wallet, FileText, BarChart, 
   Settings, HelpCircle, LogOut, Menu, X, Home 
 } from 'lucide-react';
-import { adminCheckAuth, adminSignOut } from '@/lib/adminAuth';
+import { adminCheckAuth, adminSignOut, useAdminAuth } from '@/lib/adminAuth';
+import SessionWarning from '@/components/common/SessionWarning';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -19,6 +20,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const pathname = usePathname();
   const [loading, setLoading] = useState(true);
   const [showSidebar, setShowSidebar] = useState(false);
+  const { sessionExpiring, timeRemaining, resetSession } = useAdminAuth();
   
   useEffect(() => {
     const checkAuth = async () => {
@@ -85,6 +87,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     {
       label: 'Transactions',
       href: '/admin/transactions',
+      icon: <FileText size={20} />,
+    },
+    {
+      label: 'Invoices',
+      href: '/admin/invoices',
       icon: <FileText size={20} />,
     },
     {
@@ -168,6 +175,15 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           {children}
         </div>
       </main>
+
+      {/* Session timeout warning */}
+      {sessionExpiring && (
+        <SessionWarning
+          timeRemaining={timeRemaining}
+          onExtend={resetSession}
+          onLogout={handleSignOut}
+        />
+      )}
     </div>
   );
 }

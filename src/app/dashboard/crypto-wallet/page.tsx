@@ -3,6 +3,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import SessionWarning from '@/components/common/SessionWarning';
 import DashboardSidebar from '@/components/layout/DashboardSidebar';
 import DashboardHeader from '@/components/layout/DashboardHeader';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/Card';
@@ -14,7 +15,7 @@ import { Wallet, Check, Copy, QrCode, ExternalLink, Info } from 'lucide-react';
 import { shortenAddress } from '@/utils/formatters';
 
 export default function CryptoWallet() {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, sessionExpiring, timeRemaining, resetSession, logout } = useAuth();
   const { wallets, connecting, connectWallet } = useWallet();
   const router = useRouter();
   const [showQR, setShowQR] = useState(false);
@@ -155,8 +156,8 @@ export default function CryptoWallet() {
                 </CardContent>
               </Card>
             </div>
-            
-            <div>
+
+            {/* <div>
               <Card>
                 <CardHeader>
                   <CardTitle>Connect New Wallet</CardTitle>
@@ -195,10 +196,10 @@ export default function CryptoWallet() {
                     </p>
                   </div>
                 </CardContent>
-              </Card>
+              </Card> */}
               
               {/* QR Code Scanner Component */}
-              <Card className="mt-6">
+              {/* <Card className="mt-6">
                 <CardHeader>
                   <CardTitle>Scan Wallet QR Code</CardTitle>
                   <CardDescription>
@@ -219,18 +220,30 @@ export default function CryptoWallet() {
                   </div>
                 </CardContent>
               </Card>
-            </div>
+            </div> */}
           </div>
           
           {/* Wallet Details Modal */}
           {selectedWallet && (
-            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-              <Card className="max-w-md w-full">
-                <CardHeader>
+            <div 
+              className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+              onClick={(e) => {
+                if (e.target === e.currentTarget) {
+                  setSelectedWallet(null);
+                  setShowQR(false);
+                }
+              }}
+            >
+              <Card className="max-w-md w-full relative">
+                <CardHeader className="relative">
                   <CardTitle>Wallet Details</CardTitle>
                   <button 
-                    className="absolute top-4 right-4 text-gray-400 hover:text-white"
-                    onClick={() => setSelectedWallet(null)}
+                    className="absolute top-4 right-4 text-gray-400 hover:text-white text-xl font-bold z-10"
+                    onClick={() => {
+                      setSelectedWallet(null);
+                      setShowQR(false);
+                    }}
+                    aria-label="Close"
                   >
                     &times;
                   </button>
@@ -293,8 +306,28 @@ export default function CryptoWallet() {
                     </a>
                   </div>
                 </CardContent>
+                <CardFooter className="flex justify-end">
+                  <Button 
+                    variant="secondary" 
+                    onClick={() => {
+                      setSelectedWallet(null);
+                      setShowQR(false);
+                    }}
+                  >
+                    Close
+                  </Button>
+                </CardFooter>
               </Card>
             </div>
+          )}
+          
+          {/* Session timeout warning - add this to support the session timeout feature */}
+          {sessionExpiring && (
+            <SessionWarning
+              timeRemaining={timeRemaining}
+              onExtend={resetSession}
+              onLogout={logout}
+            />
           )}
         </div>
       </main>

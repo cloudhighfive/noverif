@@ -5,15 +5,22 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
   Home, CreditCard, Wallet, FileText, Settings, 
-  HelpCircle, LogOut, Building 
+  HelpCircle, LogOut
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+
+interface NavItem {
+  label: string;
+  href: string;
+  icon: React.ReactNode;
+  requiresActive?: boolean; // Add this property to the interface
+}
 
 const DashboardSidebar: React.FC = () => {
   const pathname = usePathname();
   const { logout, isSuspended } = useAuth();
 
-  const navItems = [
+  const navItems: NavItem[] = [
     {
       label: 'Dashboard',
       href: '/dashboard',
@@ -23,13 +30,18 @@ const DashboardSidebar: React.FC = () => {
       label: 'ACH Application',
       href: '/dashboard/ach-application',
       icon: <CreditCard size={20} />,
-      requiresActive: true,
+      requiresActive: true // This action requires an active account
+    },
+    {
+      label: 'Invoices',
+      href: '/dashboard/invoices',
+      icon: <FileText size={20} />,
     },
     {
       label: 'Crypto Wallet',
       href: '/dashboard/crypto-wallet',
       icon: <Wallet size={20} />,
-      requiresActive: true,
+      requiresActive: true // This action requires an active account
     },
     {
       label: 'Transactions',

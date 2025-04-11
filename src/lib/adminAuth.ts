@@ -1,7 +1,7 @@
 // src/lib/adminAuth.ts
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   createUserWithEmailAndPassword,
@@ -11,6 +11,10 @@ import {
 } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
+import { setupSessionTimeout, checkSessionTimeout, resetSession } from '@/utils/sessionTimeout';
+
+// 5 minutes for admin session timeout - stricter than regular users
+const ADMIN_TIMEOUT_MS = 5 * 60 * 1000;
 
 // Check if a user is an admin
 export const isAdmin = async (userId: string): Promise<boolean> => {
@@ -57,6 +61,9 @@ export const adminSignIn = async (email: string, password: string) => {
       throw new Error('Access denied. You are not an admin.');
     }
     
+    // Set up session timeout
+    setupSessionTimeout(ADMIN_TIMEOUT_MS);
+    
     return user;
   } catch (error) {
     console.error('Error signing in admin:', error);
@@ -67,6 +74,7 @@ export const adminSignIn = async (email: string, password: string) => {
 // Admin sign out
 export const adminSignOut = async () => {
   try {
+    resetSession();
     await signOut(auth);
   } catch (error) {
     console.error('Error signing out admin:', error);
@@ -81,6 +89,14 @@ export const adminCheckAuth = async (): Promise<boolean> => {
       unsubscribe();
       if (user) {
         try {
+          // Check for session timeout
+          if (checkSessionTimeout(ADMIN_TIMEOUT_MS)) {
+            // Session expired, sign out
+            await adminSignOut();
+            resolve(false);
+            return;
+          }
+          
           const adminStatus = await isAdmin(user.uid);
           resolve(adminStatus);
         } catch (error) {
@@ -113,19 +129,80 @@ export const getAdminData = async (userId: string) => {
 
 // Custom hook for admin authentication
 export const useAdminAuth = () => {
-  const [admin, setAdmin] = React.useState(null);
-  const [loading, setLoading] = React.useState(true);
+  const [admin, setAdmin] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [sessionExpiring, setSessionExpiring] = useState(false);
+  const [timeRemaining, setTimeRemaining] = useState(ADMIN_TIMEOUT_MS);
   const router = useRouter();
 
-  React.useEffect(() => {
+  // Function to handle session expiration
+  const handleSessionExpiration = useCallback(async () => {
+    try {
+      await adminSignOut();
+      router.push('/admin/login?session=expired');
+    } catch (error) {
+      console.error("Error signing out admin:", error);
+    }
+  }, [router]);
+  
+  // Check session status periodically
+  useEffect(() => {
+    if (!admin) return;
+    
+    // Check every 15 seconds if session is about to expire (more frequent for admin)
+    const intervalId = setInterval(() => {
+      const lastActivityTimestamp = localStorage.getItem('lastActivityTimestamp');
+      const remaining = lastActivityTimestamp 
+        ? ADMIN_TIMEOUT_MS - (Date.now() - parseInt(lastActivityTimestamp)) 
+        : ADMIN_TIMEOUT_MS;
+        
+      setTimeRemaining(remaining);
+      
+      // If less than 1 minute remaining, show warning
+      if (remaining < 60000 && remaining > 0) {
+        setSessionExpiring(true);
+      } else {
+        setSessionExpiring(false);
+      }
+      
+      // If session has expired, log out
+      if (checkSessionTimeout(ADMIN_TIMEOUT_MS)) {
+        handleSessionExpiration();
+      }
+    }, 15000);
+
+    return () => clearInterval(intervalId);
+  }, [admin, handleSessionExpiration]);
+
+  useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        // Check if the user is an admin
-        const adminStatus = await isAdmin(user.uid);
-        if (adminStatus) {
-          const adminData = await getAdminData(user.uid);
-          setAdmin({ user, ...adminData });
-        } else {
+        try {
+          // Check for session timeout
+          if (checkSessionTimeout(ADMIN_TIMEOUT_MS)) {
+            // Session expired, sign out
+            await adminSignOut();
+            setAdmin(null);
+            router.push('/admin/login?session=expired');
+            setLoading(false);
+            return;
+          }
+          
+          // Check if the user is an admin
+          const adminStatus = await isAdmin(user.uid);
+          if (adminStatus) {
+            const adminData = await getAdminData(user.uid);
+            if (adminData) {
+              setAdmin({ user, ...adminData });
+            } else {
+              setAdmin({ user });
+            }
+          } else {
+            setAdmin(null);
+            router.push('/admin/login');
+          }
+        } catch (error) {
+          console.error("Error checking admin status:", error);
           setAdmin(null);
           router.push('/admin/login');
         }
@@ -139,5 +216,17 @@ export const useAdminAuth = () => {
     return () => unsubscribe();
   }, [router]);
 
-  return { admin, loading, adminSignOut };
+  const extendSession = () => {
+    localStorage.setItem('lastActivityTimestamp', Date.now().toString());
+    setSessionExpiring(false);
+  };
+
+  return { 
+    admin, 
+    loading, 
+    adminSignOut,
+    sessionExpiring,
+    timeRemaining,
+    resetSession: extendSession
+  };
 };

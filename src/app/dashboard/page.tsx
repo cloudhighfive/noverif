@@ -3,8 +3,7 @@
 
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import DashboardSidebar from '@/components/layout/DashboardSidebar';
-import DashboardHeader from '@/components/layout/DashboardHeader';
+import DashboardWrapper from '@/components/layout/DashboardWrapper';
 import VirtualBankStatus from '@/components/dashboard/VirtualBankStatus';
 import VirtualBankDetails from '@/components/dashboard/VirtualBankDetails';
 import WalletConnection from '@/components/dashboard/WalletConnection';
@@ -38,34 +37,26 @@ export default function Dashboard() {
   const hasCompletedVirtualBank = userData?.virtualBankStatus === 'completed';
 
   return (
-    <div className="min-h-screen bg-dark-950">
-      <DashboardSidebar />
-      <DashboardHeader />
+    <DashboardWrapper>
+      <h1 className="text-3xl font-display font-bold mb-6">Dashboard</h1>
       
-      <main className="pt-24 pb-12 pl-64">
-        <div className="container mx-auto px-6">
-          <h1 className="text-3xl font-display font-bold mb-6">Dashboard</h1>
-          
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-            <div className="lg:col-span-2">
-              {/* Show either VirtualBankStatus or VirtualBankDetails based on status */}
-              {hasCompletedVirtualBank ? (
-                <VirtualBankDetails />
-              ) : (
-                <VirtualBankStatus />
-              )}
-            </div>
-            <div>
-              <QuickActions />
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <WalletConnection />
-            <RecentTransactions />
-          </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <div className="lg:col-span-2">
+          {hasCompletedVirtualBank ? (
+            <VirtualBankDetails />
+          ) : (
+            <VirtualBankStatus />
+          )}
         </div>
-      </main>
-    </div>
+        <div>
+          <QuickActions />
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <WalletConnection />
+        <RecentTransactions />
+      </div>
+    </DashboardWrapper>
   );
 }
