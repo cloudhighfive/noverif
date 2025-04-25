@@ -1,6 +1,7 @@
 // src/components/layout/Footer.tsx
 import React from 'react';
 import Link from 'next/link';
+import Logo from '@/components/common/Logo';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -10,6 +11,7 @@ const Footer = () => {
       <div className="container px-4 mx-auto">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
           <div className="space-y-4">
+            <Logo size="lg" />
             <Link href="/" className="flex items-center">
               <span className="text-2xl font-display font-bold gradient-text">NoVerif</span>
             </Link>

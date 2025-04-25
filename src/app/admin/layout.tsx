@@ -119,7 +119,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               {showSidebar ? <X size={24} /> : <Menu size={24} />}
             </button>
             <h1 className="text-xl font-display font-bold gradient-text ml-4">
-              SwiftPay Admin
+              NoVerif Admin
             </h1>
           </div>
         </div>
@@ -134,7 +134,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         <div className="p-4 h-full flex flex-col">
           <div className="h-12 flex items-center">
             <h1 className="text-xl font-display font-bold gradient-text">
-              SwiftPay Admin
+              NoVerif Admin
             </h1>
           </div>
           

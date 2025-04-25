@@ -30,7 +30,7 @@ export const generateInvoice = async (
   pdf.text("INVOICE", 105, 20, { align: 'center' });
   
   pdf.setFontSize(12);
-  pdf.text("SwiftPay Inc.", 20, 30);
+  pdf.text("NoVerif Inc.", 20, 30);
   pdf.text("123 Crypto Street", 20, 37);
   pdf.text("San Francisco, CA 94105", 20, 44);
   

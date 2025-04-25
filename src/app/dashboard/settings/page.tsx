@@ -262,8 +262,8 @@ export default function SettingsPage() {
                         <div>
                           <p className="text-gray-300 text-sm">
                             To update your name, email, phone, or address, please contact support at{' '}
-                            <a href="mailto:support@swiftpay.com" className="text-primary-500 hover:underline">
-                              support@swiftpay.com
+                            <a href="mailto:support@noverif.com" className="text-primary-500 hover:underline">
+                              support@noverif.com
                             </a>
                           </p>
                         </div>

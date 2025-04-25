@@ -69,7 +69,7 @@ export default function AdminLogin() {
         <CardHeader>
           <CardTitle className="text-center">Admin Login</CardTitle>
           <CardDescription className="text-center">
-            Access the SwiftPay admin dashboard
+            Access the NoVerif admin dashboard
           </CardDescription>
         </CardHeader>
         <CardContent>

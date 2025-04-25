@@ -4,6 +4,7 @@ import React from 'react';
 import { User } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import NotificationBell from '@/components/notifications/NotificationBell';
+import Logo from '@/components/common/Logo';
 
 const DashboardHeader: React.FC = () => {
   const { userData } = useAuth();
@@ -11,6 +12,7 @@ const DashboardHeader: React.FC = () => {
   return (
     <header className="bg-dark-900 border-b border-dark-800 h-16 fixed top-0 right-0 left-0 z-30 md:left-64">
       <div className="h-full px-4 md:px-6 flex items-center justify-between">
+        <Logo withText={false} size="sm" />
         <h1 className="text-xl font-semibold text-white truncate">Dashboard</h1>
         <div className="flex items-center space-x-4">
           <NotificationBell />

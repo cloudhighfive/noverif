@@ -8,7 +8,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { useForm } from 'react-hook-form';
-import { Mail, MessageSquare, Phone, FileText, Check } from 'lucide-react';
+import { Mail, MessageSquare, FileText, Check, AlertCircle } from 'lucide-react';
 
 type ContactFormData = {
   name: string;
@@ -44,21 +44,38 @@ export default function Support() {
   const [activeTab, setActiveTab] = useState<'contact' | 'faq'>('contact');
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
   const [formSubmitted, setFormSubmitted] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<ContactFormData>();
 
   const onSubmit = async (data: ContactFormData) => {
-    // In a real implementation, this would send the form data to a backend API
-    console.log('Form data:', data);
-    
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    setFormSubmitted(true);
-    reset();
-    
-    // Reset form submitted state after 5 seconds
-    setTimeout(() => setFormSubmitted(false), 5000);
+    try {
+      setFormError(null);
+      
+      // Send the email via our API route
+      const response = await fetch('/api/send-support-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+      
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to send message');
+      }
+      
+      setFormSubmitted(true);
+      reset();
+      
+      // Reset form submitted state after 5 seconds
+      setTimeout(() => setFormSubmitted(false), 5000);
+    } catch (error) {
+      console.error('Error sending support message:', error);
+      setFormError(error instanceof Error ? error.message : 'Failed to send message. Please try again.');
+    }
   };
 
   const toggleFaq = (index: number) => {
@@ -104,7 +121,7 @@ export default function Support() {
             
             {activeTab === 'contact' ? (
               <>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                   <Card>
                     <CardContent className="p-6 text-center">
                       <Mail className="h-8 w-8 text-primary-500 mx-auto mb-4" />
@@ -134,7 +151,7 @@ export default function Support() {
                     </CardContent>
                   </Card>
                   
-                  <Card>
+                  {/* <Card>
                     <CardContent className="p-6 text-center">
                       <Phone className="h-8 w-8 text-primary-500 mx-auto mb-4" />
                       <h3 className="text-lg font-medium text-white mb-2">Phone Support</h3>
@@ -148,7 +165,7 @@ export default function Support() {
                         +1 (800) 555-1234
                       </a>
                     </CardContent>
-                  </Card>
+                  </Card> */}
                 </div>
                 
                 <Card>
@@ -221,6 +238,14 @@ export default function Support() {
                             <p className="mt-1 text-sm text-red-500">{errors.message.message}</p>
                           )}
                         </div>
+                        
+                        {/* Display form error if any */}
+                        {formError && (
+                          <div className="p-3 rounded-md bg-red-900/20 border border-red-500/30 flex items-start">
+                            <AlertCircle className="h-5 w-5 text-red-500 mr-2 mt-0.5" />
+                            <p className="text-sm text-red-500">{formError}</p>
+                          </div>
+                        )}
                         
                         <div className="pt-2">
                           <Button type="submit" fullWidth isLoading={isSubmitting}>

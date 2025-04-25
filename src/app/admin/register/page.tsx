@@ -74,7 +74,7 @@ export default function AdminRegister() {
         <CardHeader>
           <CardTitle className="text-center">Admin Registration</CardTitle>
           <CardDescription className="text-center">
-            Create a new SwiftPay admin account
+            Create a new NoVerif admin account
           </CardDescription>
         </CardHeader>
         <CardContent>

@@ -8,6 +8,7 @@ import {
   HelpCircle, LogOut, Menu, X
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import Logo from '@/components/common/Logo';
 
 interface NavItem {
   label: string;
@@ -92,6 +93,9 @@ const DashboardSidebar: React.FC = () => {
           isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         } md:pt-16`}
       >
+        <div className="h-16 flex items-center px-4 border-b border-dark-800">
+          <Logo size="md" />
+        </div>
         <div className="p-4 h-full flex flex-col">
           <div className="md:hidden flex items-center justify-between mb-6 pt-4">
             <h1 className="text-xl font-display font-bold gradient-text">NoVerif</h1>

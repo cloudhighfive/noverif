@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/Button';
 import { Menu, X } from 'lucide-react';
+import Logo from '@/components/common/Logo';
+
 
 const Header = () => {
   const { isAuthenticated, logout } = useAuth();
@@ -31,6 +33,7 @@ const Header = () => {
       scrolled ? 'bg-dark-900/95 backdrop-blur-sm shadow-md' : 'bg-dark-900'
     }`}>
       <div className="container py-4 px-4 mx-auto flex items-center justify-between">
+        <Logo />
         <Link href="/" className="flex items-center">
           <span className="text-2xl font-display font-bold gradient-text">NoVerif</span>
         </Link>
