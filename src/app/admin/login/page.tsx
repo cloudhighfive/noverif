@@ -51,7 +51,19 @@ export default function AdminLogin() {
       router.push('/admin/dashboard');
     } catch (error: any) {
       console.error("Login error:", error);
-      setError(error.message || "Failed to login. Please check your credentials.");
+      
+      // User-friendly error messages based on Firebase error codes
+      if (error.code === 'auth/invalid-credential' || 
+          error.code === 'auth/user-not-found' || 
+          error.code === 'auth/wrong-password') {
+        setError("Invalid email or password. Please try again.");
+      } else if (error.code === 'auth/too-many-requests') {
+        setError("Too many failed login attempts. Please try again later.");
+      } else if (error.code === 'auth/user-disabled') {
+        setError("This account has been disabled. Please contact an administrator.");
+      } else {
+        setError("Login failed. Please check your credentials and try again.");
+      }
     }
   };
 
@@ -102,14 +114,7 @@ export default function AdminLogin() {
               Log In
             </Button>
             
-            <div className="text-center">
-              <p className="text-sm text-gray-400">
-                Don't have an admin account?{' '}
-                <a href="/admin/register" className="text-primary-500 hover:underline">
-                  Register
-                </a>
-              </p>
-            </div>
+            {/* Register link removed */}
           </form>
         </CardContent>
       </Card>

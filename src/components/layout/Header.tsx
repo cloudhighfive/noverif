@@ -34,9 +34,9 @@ const Header = () => {
     }`}>
       <div className="container py-4 px-4 mx-auto flex items-center justify-between">
         <Logo />
-        <Link href="/" className="flex items-center">
+        {/* <Link href="/" className="flex items-center">
           <span className="text-2xl font-display font-bold gradient-text">NoVerif</span>
-        </Link>
+        </Link> */}
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-6">

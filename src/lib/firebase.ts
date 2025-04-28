@@ -289,10 +289,8 @@ export const createInvoice = async (userId: string, invoiceData: Omit<Invoice, '
     // Create a clean data object without undefined values
     const cleanedData = { ...invoiceData };
     
-    // Remove undefined fields or replace with null
     if (cleanedData.recurringFrequency === undefined) {
-      delete cleanedData.recurringFrequency; // Remove the field entirely
-      // OR set it to null: cleanedData.recurringFrequency = null;
+      delete cleanedData.recurringFrequency;
     }
     
     await setDoc(invoiceRef, {
@@ -300,8 +298,7 @@ export const createInvoice = async (userId: string, invoiceData: Omit<Invoice, '
       id: invoiceRef.id,
       userId,
       createdAt: timestamp,
-      updatedAt: timestamp,
-      status: 'draft'
+      updatedAt: timestamp
     });
     
     return invoiceRef.id;

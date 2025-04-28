@@ -66,6 +66,10 @@ const DashboardSidebar: React.FC = () => {
     setIsOpen(!isOpen);
   };
 
+  const handleLogout = () => {
+    logout();
+  };
+
   // Mobile toggle button - Fixed position at bottom right
   const MobileToggle = () => (
     <button 
@@ -91,12 +95,12 @@ const DashboardSidebar: React.FC = () => {
       <aside 
         className={`bg-dark-900 border-r border-dark-800 w-64 h-screen fixed left-0 top-0 z-40 transition-transform duration-300 ${
           isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
-        } md:pt-16`}
+        } flex flex-col`}
       >
         <div className="h-16 flex items-center px-4 border-b border-dark-800">
           <Logo size="md" />
         </div>
-        <div className="p-4 h-full flex flex-col">
+        <div className="p-4 flex-1 flex flex-col">
           <div className="md:hidden flex items-center justify-between mb-6 pt-4">
             <h1 className="text-xl font-display font-bold gradient-text">NoVerif</h1>
             <button onClick={() => setIsOpen(false)}>
@@ -141,9 +145,11 @@ const DashboardSidebar: React.FC = () => {
               );
             })}
           </nav>
+          
+          {/* Moved logout button out of nav to emphasize it */}
           <button
-            onClick={() => logout()}
-            className="flex items-center px-4 py-3 rounded-lg text-gray-400 hover:bg-dark-800 hover:text-white transition-colors mt-auto"
+            onClick={handleLogout}
+            className="flex items-center px-4 py-3 rounded-lg text-gray-400 hover:bg-dark-800 hover:text-white transition-colors mt-4 w-full"
           >
             <LogOut size={20} className="mr-3" />
             <span>Logout</span>

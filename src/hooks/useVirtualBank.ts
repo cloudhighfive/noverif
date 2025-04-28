@@ -4,6 +4,35 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from './useAuth';
 import { submitACHApplication } from '@/lib/firebase';
+import { Timestamp } from 'firebase/firestore';
+
+// Helper function to safely convert to Date
+function convertToDate(dateField: any): Date | null {
+  if (!dateField) return null;
+  
+  // If it's already a Date
+  if (dateField instanceof Date) {
+    return dateField;
+  }
+  
+  // If it's a Timestamp with toDate method
+  if (typeof dateField === 'object' && 'toDate' in dateField && typeof dateField.toDate === 'function') {
+    return dateField.toDate();
+  }
+  
+  // If it's a number (timestamp in milliseconds)
+  if (typeof dateField === 'number') {
+    return new Date(dateField);
+  }
+  
+  // If it's a string (date string)
+  if (typeof dateField === 'string') {
+    return new Date(dateField);
+  }
+  
+  // Failed to convert
+  return null;
+}
 
 export function useVirtualBank() {
   const { user, userData } = useAuth();
@@ -15,7 +44,13 @@ export function useVirtualBank() {
   useEffect(() => {
     if (userData) {
       setStatus(userData.virtualBankStatus || 'pending');
-      setCreatedAt(userData.virtualBankCreatedAt ? userData.virtualBankCreatedAt.toDate() : null);
+      
+      // Use the helper function to safely convert the date
+      if (userData.virtualBankCreatedAt) {
+        setCreatedAt(convertToDate(userData.virtualBankCreatedAt));
+      } else {
+        setCreatedAt(null);
+      }
     }
   }, [userData]);
 

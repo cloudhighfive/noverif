@@ -180,21 +180,6 @@ export default function AdminInvoicesPage() {
     
     return matchesSearch;
   });
-  
-  const getStatusBadgeClass = (status: string) => {
-    switch (status) {
-      case 'draft':
-        return 'bg-gray-500/10 text-gray-500';
-      case 'sent':
-        return 'bg-blue-500/10 text-blue-500';
-      case 'paid':
-        return 'bg-green-500/10 text-green-500';
-      case 'overdue':
-        return 'bg-red-500/10 text-red-500';
-      default:
-        return 'bg-gray-500/10 text-gray-500';
-    }
-  };
 
   return (
     <div>
@@ -254,9 +239,8 @@ export default function AdminInvoicesPage() {
                     <th className="text-left p-4 text-sm font-medium text-gray-400">Invoice #</th>
                     <th className="text-left p-4 text-sm font-medium text-gray-400">User</th>
                     <th className="text-left p-4 text-sm font-medium text-gray-400">Client</th>
-                    <th className="text-left p-4 text-sm font-medium text-gray-400">Amount</th>
-                    <th className="text-left p-4 text-sm font-medium text-gray-400">Status</th>
-                    <th className="text-right p-4 text-sm font-medium text-gray-400">Actions</th>
+                    <th className="text-right p-4 text-sm font-medium text-gray-400 w-36">Amount</th>
+                    <th className="text-right p-4 text-sm font-medium text-gray-400 w-48">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-dark-700">
@@ -277,15 +261,8 @@ export default function AdminInvoicesPage() {
                       <td className="p-4 text-sm text-white">
                         {invoice.clientName}
                       </td>
-                      <td className="p-4 text-sm font-medium text-white">
+                      <td className="p-4 text-sm font-medium text-white text-right">
                         {formatCurrency(invoice.total)} USD
-                      </td>
-                      <td className="p-4">
-                        <span 
-                          className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeClass(invoice.status)}`}
-                        >
-                          {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
-                        </span>
                       </td>
                       <td className="p-4 text-right">
                         <div className="flex justify-end space-x-2">
@@ -343,11 +320,6 @@ export default function AdminInvoicesPage() {
                 <div>
                   <h2 className="text-2xl font-bold mb-2">Invoice</h2>
                   <p className="text-gray-400">#{selectedInvoice.invoiceNumber}</p>
-                  <span 
-                    className={`inline-block px-3 py-1 rounded-full text-xs font-medium mt-2 ${getStatusBadgeClass(selectedInvoice.status)}`}
-                  >
-                    {selectedInvoice.status.charAt(0).toUpperCase() + selectedInvoice.status.slice(1)}
-                  </span>
                 </div>
                 <div className="text-right">
                   <p className="text-gray-400">Invoice date: {formatDate(selectedInvoice.issueDate as Date)}</p>

@@ -67,11 +67,68 @@ export default function InvoicesPage() {
   const handleDownloadInvoice = async (invoice: Invoice, e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent navigation to invoice details
     try {
-      // Create PDF document (implementation omitted for brevity)
-      alert('PDF download functionality would be implemented here');
+      // Create PDF document
+      const pdf = new jsPDF();
+      
+      // Add invoice content
+      pdf.setFontSize(20);
+      pdf.text("INVOICE", 105, 20, { align: 'center' });
+      
+      pdf.setFontSize(12);
+      pdf.text(userData?.name || 'Your Business', 20, 30);
+      pdf.text("123 Business St.", 20, 37);
+      pdf.text("New York, NY 10001", 20, 44);
+      
+      pdf.text(`Invoice #: ${invoice.invoiceNumber}`, 140, 30);
+      pdf.text(`Date: ${formatDate(invoice.issueDate as Date)}`, 140, 37);
+      pdf.text(`Due: ${formatDate(invoice.dueDate as Date)}`, 140, 44);
+      
+      pdf.text("Bill To:", 20, 60);
+      pdf.text(`${invoice.clientName}`, 20, 67);
+      if (invoice.clientEmail) pdf.text(`${invoice.clientEmail}`, 20, 74);
+      if (invoice.clientAddress) pdf.text(`${invoice.clientAddress}`, 20, 81);
+      
+      // Table header
+      pdf.setFillColor(240, 240, 240);
+      pdf.rect(20, 95, 170, 10, 'F');
+      pdf.setTextColor(0, 0, 0);
+      pdf.text("Description", 25, 102);
+      pdf.text("Quantity", 100, 102);
+      pdf.text("Price", 130, 102);
+      pdf.text("Amount", 160, 102);
+      
+      // Table content
+      let y = 115;
+      invoice.items.forEach(item => {
+        pdf.text(item.description, 25, y);
+        pdf.text(item.quantity.toString(), 100, y);
+        pdf.text(`$${item.price.toFixed(2)}`, 130, y);
+        pdf.text(`$${item.amount.toFixed(2)}`, 160, y);
+        y += 10;
+      });
+      
+      // Totals
+      y += 10;
+      pdf.text("Subtotal:", 130, y);
+      pdf.text(`$${invoice.subtotal.toFixed(2)}`, 160, y);
+      
+      y += 7;
+      pdf.text("Tax:", 130, y);
+      pdf.text(`$${invoice.tax.toFixed(2)}`, 160, y);
+      
+      y += 7;
+      pdf.line(130, y, 170, y);
+      
+      y += 7;
+      pdf.setFontSize(14);
+      pdf.text("Total:", 130, y);
+      pdf.text(`$${invoice.total.toFixed(2)}`, 160, y);
+      
+      // Save PDF
+      pdf.save(`invoice-${invoice.invoiceNumber}.pdf`);
     } catch (error) {
-      console.error('Error generating PDF:', error);
-      alert('Failed to download invoice. Please try again.');
+      console.error("Error generating PDF:", error);
+      alert("Failed to download invoice. Please try again.");
     }
   };
 
@@ -104,21 +161,6 @@ export default function InvoicesPage() {
 
   const getNonRecurringInvoices = () => {
     return filteredInvoices.filter(invoice => !invoice.isRecurring);
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'draft':
-        return 'bg-gray-500/10 text-gray-500';
-      case 'sent':
-        return 'bg-blue-500/10 text-blue-500';
-      case 'paid':
-        return 'bg-green-500/10 text-green-500';
-      case 'overdue':
-        return 'bg-red-500/10 text-red-500';
-      default:
-        return 'bg-gray-500/10 text-gray-500';
-    }
   };
 
   if (loading || !isAuthenticated) {
@@ -194,12 +236,11 @@ export default function InvoicesPage() {
                   <Card>
                     <div className="min-w-full divide-y divide-dark-700">
                       <div className="bg-dark-800 hidden md:flex">
-                        <div className="px-4 py-3 w-32 text-left text-sm font-medium text-gray-400">Date</div>
+                        <div className="px-4 py-3 w-28 text-left text-sm font-medium text-gray-400">Date</div>
                         <div className="px-4 py-3 w-32 text-left text-sm font-medium text-gray-400">Number</div>
                         <div className="px-4 py-3 flex-1 text-left text-sm font-medium text-gray-400">Client</div>
-                        <div className="px-4 py-3 w-32 text-left text-sm font-medium text-gray-400">Total</div>
-                        <div className="px-4 py-3 w-32 text-left text-sm font-medium text-gray-400">Status</div>
-                        <div className="px-4 py-3 w-40 text-right text-sm font-medium text-gray-400">Actions</div>
+                        <div className="px-4 py-3 w-36 text-left text-sm font-medium text-gray-400">Total</div>
+                        <div className="px-4 py-3 w-48 text-right text-sm font-medium text-gray-400">Actions</div>
                       </div>
                       
                       <div className="divide-y divide-dark-700">
@@ -214,11 +255,6 @@ export default function InvoicesPage() {
                               <div className="flex items-center justify-between mb-2">
                                 <div className="flex items-center">
                                   <span className="text-white font-medium">{invoice.invoiceNumber}</span>
-                                  <span 
-                                    className={`ml-2 inline-block px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(invoice.status)}`}
-                                  >
-                                    {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
-                                  </span>
                                 </div>
                                 <span className="text-white font-medium">{formatCurrency(invoice.total)}</span>
                               </div>
@@ -248,7 +284,7 @@ export default function InvoicesPage() {
                             </div>
                             
                             {/* Desktop view - table row */}
-                            <div className="hidden md:block px-4 py-4 w-32 text-sm text-gray-300">
+                            <div className="hidden md:block px-4 py-4 w-28 text-sm text-gray-300">
                               {formatDate(invoice.issueDate as Date)}
                             </div>
                             <div className="hidden md:block px-4 py-4 w-32 text-sm text-white">
@@ -257,17 +293,10 @@ export default function InvoicesPage() {
                             <div className="hidden md:block px-4 py-4 flex-1 text-sm text-white">
                               {invoice.clientName}
                             </div>
-                            <div className="hidden md:block px-4 py-4 w-32 text-sm font-medium text-white">
+                            <div className="hidden md:block px-4 py-4 w-36 text-sm font-medium text-white">
                               {formatCurrency(invoice.total)}
                             </div>
-                            <div className="hidden md:block px-4 py-4 w-32">
-                              <span 
-                                className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(invoice.status)}`}
-                              >
-                                {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
-                              </span>
-                            </div>
-                            <div className="hidden md:flex px-4 py-4 w-40 justify-end items-center space-x-2" onClick={e => e.stopPropagation()}>
+                            <div className="hidden md:flex px-4 py-4 w-48 justify-end items-center space-x-2" onClick={e => e.stopPropagation()}>
                               <Button 
                                 variant="outline" 
                                 size="sm"
@@ -325,7 +354,7 @@ export default function InvoicesPage() {
                         <div className="px-4 py-3 w-32 text-left text-sm font-medium text-gray-400">Frequency</div>
                         <div className="px-4 py-3 w-32 text-left text-sm font-medium text-gray-400">Number</div>
                         <div className="px-4 py-3 flex-1 text-left text-sm font-medium text-gray-400">Client</div>
-                        <div className="px-4 py-3 w-32 text-left text-sm font-medium text-gray-400">Amount</div>
+                        <div className="px-4 py-3 w-36 text-left text-sm font-medium text-gray-400">Amount</div>
                         <div className="px-4 py-3 w-32 text-left text-sm font-medium text-gray-400">Next Date</div>
                         <div className="px-4 py-3 w-40 text-right text-sm font-medium text-gray-400">Actions</div>
                       </div>
@@ -383,7 +412,7 @@ export default function InvoicesPage() {
                             <div className="hidden md:block px-4 py-4 flex-1 text-sm text-white">
                               {invoice.clientName}
                             </div>
-                            <div className="hidden md:block px-4 py-4 w-32 text-sm font-medium text-white">
+                            <div className="hidden md:block px-4 py-4 w-36 text-sm font-medium text-white">
                               {formatCurrency(invoice.total)}
                             </div>
                             <div className="hidden md:block px-4 py-4 w-32 text-sm text-gray-300">

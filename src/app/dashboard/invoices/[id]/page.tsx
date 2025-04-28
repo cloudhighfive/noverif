@@ -21,7 +21,7 @@ export default function InvoiceDetailPage() {
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [loadingInvoice, setLoadingInvoice] = useState(true);
   const [deletingInvoice, setDeletingInvoice] = useState(false);
-  const [downlodingPdf, setDownloadingPdf] = useState(false);
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
@@ -183,21 +183,6 @@ export default function InvoiceDetailPage() {
     );
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'draft':
-        return 'bg-gray-500/10 text-gray-500';
-      case 'sent':
-        return 'bg-blue-500/10 text-blue-500';
-      case 'paid':
-        return 'bg-green-500/10 text-green-500';
-      case 'overdue':
-        return 'bg-red-500/10 text-red-500';
-      default:
-        return 'bg-gray-500/10 text-gray-500';
-    }
-  };
-
   // Get ACH information from user data
   const bankDetails = userData?.bankDetails || null;
 
@@ -232,7 +217,7 @@ export default function InvoiceDetailPage() {
                 variant="outline" 
                 leftIcon={<Download size={16} />}
                 onClick={handleDownloadPdf}
-                isLoading={downlodingPdf}
+                isLoading={downloadingPdf}
               >
                 Download
               </Button>
@@ -255,11 +240,6 @@ export default function InvoiceDetailPage() {
                   <div>
                     <h2 className="text-2xl font-bold mb-2">Invoice</h2>
                     <p className="text-gray-400">#{invoice.invoiceNumber}</p>
-                    <span 
-                      className={`inline-block px-3 py-1 rounded-full text-xs font-medium mt-2 ${getStatusColor(invoice.status)}`}
-                    >
-                      {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
-                    </span>
                   </div>
                   <div className="text-right">
                     <p className="text-gray-400">Invoice date: {formatDate(invoice.issueDate as Date)}</p>

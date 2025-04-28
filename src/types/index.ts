@@ -109,7 +109,7 @@ export interface Invoice {
   subtotal: number;
   tax: number;
   total: number;
-  status: 'draft' | 'sent' | 'paid' | 'overdue';
+  // status: 'draft' | 'sent' | 'paid' | 'overdue';
   createdAt: Date | Timestamp;
   updatedAt?: Date | Timestamp;
   isRecurring?: boolean;

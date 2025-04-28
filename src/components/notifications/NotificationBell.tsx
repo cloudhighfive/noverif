@@ -1,10 +1,9 @@
-// src/components/notifications/NotificationBell.tsx
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Bell } from 'lucide-react';
 import { useNotifications } from '@/hooks/useNotifications';
 import { formatDate } from '@/utils/formatters';
 import { Notification } from '@/types';
+import { Timestamp } from 'firebase/firestore';
 
 interface NotificationBellProps {
   className?: string;
@@ -43,6 +42,18 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ className = '' }) =
       default:
         return '📢';
     }
+  };
+
+  // Helper function to format date from Timestamp or Date
+  const formatNotificationDate = (dateField: Date | Timestamp | undefined): string => {
+    if (!dateField) return '';
+    
+    // Check if it's a Timestamp object (has toDate method)
+    if (dateField instanceof Timestamp || (dateField as any).toDate) {
+      return formatDate((dateField as any).toDate());
+    }
+    // If it's already a Date object
+    return formatDate(dateField as Date);
   };
 
   return (
@@ -88,7 +99,7 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ className = '' }) =
                     <div className="flex-1">
                       <p className="text-sm text-white">{notification.message}</p>
                       <p className="text-xs text-gray-400 mt-1">
-                        {notification.createdAt ? formatDate(notification.createdAt) : ''}
+                        {formatNotificationDate(notification.createdAt)}
                       </p>
                     </div>
                     <button

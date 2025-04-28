@@ -12,9 +12,9 @@ const Footer = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
           <div className="space-y-4">
             <Logo size="lg" />
-            <Link href="/" className="flex items-center">
+            {/* <Link href="/" className="flex items-center">
               <span className="text-2xl font-display font-bold gradient-text">NoVerif</span>
-            </Link>
+            </Link> */}
             <p className="text-gray-400 text-sm">
               Fast, secure payments without the paperwork. Connect your crypto wallet and start transacting in minutes.
             </p>

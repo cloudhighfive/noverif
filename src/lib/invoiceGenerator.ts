@@ -5,6 +5,7 @@ import { jsPDF } from 'jspdf';
 import { useAuth } from '@/hooks/useAuth';
 import { db } from '@/lib/firebase';
 import { doc, collection, setDoc } from 'firebase/firestore';
+import { UserProfile } from '@/types';
 
 export const generateInvoice = async (
   invoiceData = {
@@ -20,7 +21,8 @@ export const generateInvoice = async (
   if (!auth.user) throw new Error("User not authenticated");
   
   const userId = auth.user.uid;
-  const userData = auth.userData || {};
+  // Type assertion to fix the TypeScript error
+  const userData = (auth.userData || {}) as Partial<UserProfile>;
   
   // Create a new PDF document
   const pdf = new jsPDF();
@@ -89,11 +91,16 @@ export const generateInvoice = async (
   await setDoc(invoiceRef, {
     userId,
     createdAt: new Date(),
-    status: "pending",
-    amount: invoiceData.total,
     items: invoiceData.items,
     notes: invoiceData.notes,
-    invoiceNumber: `INV-${Date.now().toString().slice(-6)}`
+    invoiceNumber: `INV-${Date.now().toString().slice(-6)}`,
+    // Add other required fields for the Invoice type
+    clientName: userData.name || 'Client',
+    issueDate: new Date(),
+    dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // Due in 7 days
+    subtotal: invoiceData.subtotal,
+    tax: invoiceData.tax,
+    total: invoiceData.total
   });
   
   // Save and download the PDF
